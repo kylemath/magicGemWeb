@@ -468,6 +468,31 @@ a:hover {
     font-weight: 500;
 }
 
+/* Dropdown styling */
+.square-dropdown {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.square-dropdown:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-card);
+}
+
+.square-dropdown:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
 .button-group {
     display: flex;
     gap: var(--space-xs);

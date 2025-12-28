@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Magic Square Gems</title>
+    <style>
+        body { margin: 0; }
+        #container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+        #leftPanel {
+            width: 30%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #controls {
+            padding: 10px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+        }
+        #squareGrid {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 5px;
+        }
+        #gemView {
+            width: 70%;
+            height: 100%;
+            position: relative;
+        }
+        #viewControls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .square-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            cursor: pointer;
+            padding: 2px;
+            border: 1px solid #ccc;
+            background: white;
+            position: relative;
+        }
+        .square-container:hover {
+            background-color: #f0f0f0;
+        }
+        .square-container.selected {
+            border: 2px solid #007bff;
+            padding: 1px;
+        }
+        .square-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            background-color: #fff;
+            border: 1px solid #eee;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        .control-group label {
+            margin-right: 10px;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+        }
+        .view-btn {
+            width: 80px;
+        }
+        .square-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            color: #333;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+            min-width: 200px;
+            z-index: 100;
+        }
+        .square-info .stat-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .square-info .stat-value {
+            float: right;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="leftPanel">
+            <div id="controls">
+                <div class="control-group">
+                    <label>Visualization:</label>
+                    <input type="checkbox" id="showPoints">
+                    <label for="showPoints">Points</label>
+                    <input type="checkbox" id="showHull" checked>
+                    <label for="showHull">Convex Hull</label>
+                    <input type="checkbox" id="showVectors">
+                    <label for="showVectors">Vectors</label>
+                    <input type="checkbox" id="showAxes" checked>
+                    <label for="showAxes">Axes</label>
+                    <input type="checkbox" id="orthographic">
+                    <label for="orthographic">Orthographic</label>
+                </div>
+                <div class="control-group">
+                    <label>Point Size:</label>
+                    <input type="range" id="pointSize" min="0.05" max="0.2" step="0.01" value="0.0">
+                </div>
+                <div class="control-group">
+                    <label>Hull Opacity:</label>
+                    <input type="range" id="hullOpacity" min="0.1" max="1.0" step="0.1" value="1.0">
+                </div>
+                <div class="control-group">
+                    <button id="colorFaces">Color Similar Faces</button>
+                    <label>Similarity ε:</label>
+                    <input type="number" id="epsilon" value="0.001" step="0.001" min="0.0001" max="0.1">
+                </div>
+            </div>
+            <div id="squareGrid"></div>
+        </div>
+        <div id="gemView">
+            <div id="viewControls">
+                <button class="view-btn" data-view="front">Front</button>
+                <button class="view-btn" data-view="back">Back</button>
+                <button class="view-btn" data-view="left">Left</button>
+                <button class="view-btn" data-view="right">Right</button>
+                <button class="view-btn" data-view="top">Top</button>
+                <button class="view-btn" data-view="bottom">Bottom</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+
+        // Initialize Three.js scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+        
+        // Create both camera types
+        const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth * 0.7 / window.innerHeight, 0.1, 1000);
+        const orthographicCamera = new THREE.OrthographicCamera(
+            -2 * (window.innerWidth * 0.7) / window.innerHeight,
+            2 * (window.innerWidth * 0.7) / window.innerHeight,
+            2,
+            -2,
+            0.1,
+            1000
+        );
+        
+        let camera = perspectiveCamera; // Start with perspective camera
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth * 0.7, window.innerHeight);
+        document.getElementById('gemView').appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+        scene.add(ambientLight);
+        
+        // Add directional lights for better depth perception
+        const frontLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        frontLight.position.set(1, 1, 2);
+        scene.add(frontLight);
+        
+        const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+        backLight.position.set(-1, -1, -2);
+        scene.add(backLight);
+
+        // Add camera controls
+        let controls = new OrbitControls(camera, renderer.domElement);
+        camera.position.set(3, 3, 3);
+        controls.update();
+
+        // Add axes helper
+        const axesHelper = new THREE.AxesHelper(2);
+        scene.add(axesHelper);
+
+        let currentPoints, currentHull, currentVectors;
+        let currentSquare;
+        let squareColorCache = new Map(); // Cache to store face colors for each square
+        let squareConnectionsCache = new Map(); // Cache to store face connections for each square
+        let faceConnections = null; // Store the current face connection lines
+        let currentGroups = []; // Store current face groups
+
+        // Predefined color palette
+        const colorPalette = [
+            '#2f4f4f', // darkslategray
+            '#7f0000', // maroon2
+            '#008000', // green
+            '#000080', // navy
+            '#ff0000', // red
+            '#00ced1', // darkturquoise
+            '#ffa500', // orange
+            '#7fff00', // chartreuse
+            '#00fa9a', // mediumspringgreen
+            '#0000ff', // blue
+            '#ff00ff', // fuchsia
+            '#1e90ff', // dodgerblue
+            '#eee8aa', // palegoldenrod
+            '#ffff54', // laserlemon
+            '#dda0dd', // plum
+            '#ff1493'  // deeppink
+        ];
+
+        // Function to generate colors from palette
+        function generateDistinctColors(n) {
+            const colors = [];
+            for (let i = 0; i < n; i++) {
+                const color = new THREE.Color(colorPalette[i % colorPalette.length]);
+                colors.push(color);
+            }
+            return colors;
+        }
+        
+        // Custom shader for glowing lines
+        const laserVertexShader = `
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            varying vec3 vNormal;
+            void main() {
+                vUv = uv;
+                vPosition = position;
+                vNormal = normalize(normalMatrix * normal);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const laserFragmentShader = `
+            uniform vec3 color;
+            uniform float thickness;
+            varying vec2 vUv;
+            
+            void main() {
+                // Calculate distance from center line
+                float center = 0.5;
+                float dist = abs(vUv.x - center);
+                
+                // Create gaussian falloff
+                float sigma = 0.15;
+                float intensity = exp(-dist * dist / (2.0 * sigma * sigma));
+                
+                // Add extra glow at the peak
+                float peakBoost = smoothstep(0.48, 0.52, 1.0 - dist) * 0.5;
+                intensity += peakBoost;
+                
+                gl_FragColor = vec4(color, intensity);
+            }
+        `;
+
+        // Function to create arc between two points
+        function createArcBetweenPoints(start, end, color) {
+            // Calculate direction from center to middle point
+            const center = new THREE.Vector3(0, 0, 0);
+            const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+            const directionFromCenter = midPoint.clone().sub(center).normalize();
+            
+            // Calculate the radius as 2.5 times the distance from center to the furthest point
+            const radius = Math.max(
+                start.length(),
+                end.length(),
+                midPoint.length()
+            ) * 2.5;
+            
+            // Create a raised control point far from the shape
+            const controlPoint = directionFromCenter.multiplyScalar(radius);
+            
+            // Create quadratic bezier curve with raised control point
+            const curve = new THREE.QuadraticBezierCurve3(
+                start,
+                controlPoint,
+                end
+            );
+
+            // Create geometry from curve with more points for smoother arc
+            const points = curve.getPoints(100);
+            
+            // Create a tube geometry around the curve
+            const tubeGeometry = new THREE.TubeGeometry(
+                new THREE.CatmullRomCurve3(points),
+                100,  // tubular segments
+                0.02, // tube radius
+                8,    // radial segments
+                false // closed
+            );
+
+            // Create custom shader material
+            const material = new THREE.ShaderMaterial({
+                vertexShader: laserVertexShader,
+                fragmentShader: laserFragmentShader,
+                uniforms: {
+                    color: { value: new THREE.Color(color) },
+                    thickness: { value: 0.15 }
+                },
+                transparent: true,
+                depthTest: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+
+            return new THREE.Mesh(tubeGeometry, material);
+        }
+
+        // Function to get face vertices
+        function getFaceVertices(faceIndex, geometry) {
+            const vertices = [];
+            for (let i = 0; i < 3; i++) {
+                const vertexIndex = faceIndex * 3 + i;
+                vertices.push(new THREE.Vector3(
+                    geometry.attributes.position.array[vertexIndex * 3],
+                    geometry.attributes.position.array[vertexIndex * 3 + 1],
+                    geometry.attributes.position.array[vertexIndex * 3 + 2]
+                ));
+            }
+            return vertices;
+        }
+
+        // Function to get face characteristics (edge lengths and angles)
+        function getFaceCharacteristics(vertices) {
+            // Calculate edge lengths
+            const edges = [];
+            for (let i = 0; i < 3; i++) {
+                const v1 = vertices[i];
+                const v2 = vertices[(i + 1) % 3];
+                edges.push(v1.distanceTo(v2));
+            }
+            
+            // Sort edges to make comparison rotation-invariant
+            edges.sort();
+            
+            // Calculate angles
+            const angles = [];
+            for (let i = 0; i < 3; i++) {
+                const v1 = vertices[i];
+                const v2 = vertices[(i + 1) % 3];
+                const v3 = vertices[(i + 2) % 3];
+                
+                const edge1 = new THREE.Vector3().subVectors(v2, v1);
+                const edge2 = new THREE.Vector3().subVectors(v3, v1);
+                const angle = edge1.angleTo(edge2);
+                angles.push(angle);
+            }
+            
+            // Sort angles to make comparison rotation-invariant
+            angles.sort();
+            
+            return { edges, angles };
+        }
+
+        // Function to check if two faces are similar
+        function areFacesSimilar(face1Chars, face2Chars, epsilon) {
+            // Compare edge lengths
+            for (let i = 0; i < 3; i++) {
+                if (Math.abs(face1Chars.edges[i] - face2Chars.edges[i]) > epsilon) {
+                    return false;
+                }
+            }
+            
+            // Compare angles
+            for (let i = 0; i < 3; i++) {
+                if (Math.abs(face1Chars.angles[i] - face2Chars.angles[i]) > epsilon) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // Function to get face center
+        function getFaceCenter(vertices) {
+            const center = new THREE.Vector3();
+            vertices.forEach(vertex => center.add(vertex));
+            center.divideScalar(3);
+            return center;
+        }
+
+        // Modified colorSimilarFaces function to add connections
+        function colorSimilarFaces(square, geometry) {
+            // Create a unique key for the square
+            const squareKey = JSON.stringify(square);
+
+            // Remove existing connections if any
+            if (faceConnections) {
+                scene.remove(faceConnections);
+            }
+            faceConnections = new THREE.Group();
+            
+            // If we already have colors and connections for this square, use them
+            if (squareColorCache.has(squareKey)) {
+                const cachedColors = squareColorCache.get(squareKey);
+                geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(cachedColors), 3));
+                
+                // Restore cached connections
+                if (squareConnectionsCache.has(squareKey)) {
+                    const cachedConnections = squareConnectionsCache.get(squareKey);
+                    cachedConnections.forEach(connection => {
+                        faceConnections.add(connection.clone());
+                    });
+                    scene.add(faceConnections);
+                }
+                return;
+            }
+
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            const faceCharacteristics = [];
+            const faceCenters = [];
+            
+            // Get characteristics and centers for all faces
+            for (let i = 0; i < geometry.attributes.position.count / 3; i++) {
+                const vertices = getFaceVertices(i, geometry);
+                faceCharacteristics.push(getFaceCharacteristics(vertices));
+                faceCenters.push(getFaceCenter(vertices));
+            }
+
+            // Group similar faces
+            currentGroups = [];
+            const used = new Set();
+
+            for (let i = 0; i < faceCharacteristics.length; i++) {
+                if (used.has(i)) continue;
+                
+                const group = [i];
+                used.add(i);
+
+                for (let j = i + 1; j < faceCharacteristics.length; j++) {
+                    if (!used.has(j) && areFacesSimilar(faceCharacteristics[i], faceCharacteristics[j], epsilon)) {
+                        group.push(j);
+                        used.add(j);
+                    }
+                }
+                currentGroups.push(group);
+            }
+
+            // Generate distinct colors for the number of groups
+            const distinctColors = generateDistinctColors(currentGroups.length);
+
+            // Create colors array and connection lines
+            const hullColors = new Float32Array(geometry.attributes.position.count * 3);
+            const connections = []; // Store connections for caching
+            
+            currentGroups.forEach((group, groupIndex) => {
+                const color = distinctColors[groupIndex];
+                
+                // Color the faces
+                group.forEach(faceIndex => {
+                    for (let i = 0; i < 3; i++) {
+                        const vertexIndex = faceIndex * 3 + i;
+                        hullColors[vertexIndex * 3] = color.r;
+                        hullColors[vertexIndex * 3 + 1] = color.g;
+                        hullColors[vertexIndex * 3 + 2] = color.b;
+                    }
+                });
+
+                // Create connections between faces in the same group
+                if (group.length > 1) {
+                    for (let i = 0; i < group.length - 1; i++) {
+                        const start = faceCenters[group[i]];
+                        const end = faceCenters[group[i + 1]];
+                        const arc = createArcBetweenPoints(start, end, color);
+                        faceConnections.add(arc);
+                        connections.push(arc);
+                    }
+                }
+            });
+
+            // Add connections to scene
+            scene.add(faceConnections);
+
+            // Cache the colors and connections for this square
+            squareColorCache.set(squareKey, Array.from(hullColors));
+            squareConnectionsCache.set(squareKey, connections);
+
+            // Apply colors
+            geometry.setAttribute('color', new THREE.BufferAttribute(hullColors, 3));
+            currentHull.material.vertexColors = true;
+            currentHull.material.needsUpdate = true;
+        }
+
+        // Function to calculate volume of convex hull
+        function calculateVolume(geometry) {
+            let volume = 0;
+            for (let i = 0; i < geometry.attributes.position.count; i += 3) {
+                const v1 = new THREE.Vector3(
+                    geometry.attributes.position.array[i * 3],
+                    geometry.attributes.position.array[i * 3 + 1],
+                    geometry.attributes.position.array[i * 3 + 2]
+                );
+                const v2 = new THREE.Vector3(
+                    geometry.attributes.position.array[(i + 1) * 3],
+                    geometry.attributes.position.array[(i + 1) * 3 + 1],
+                    geometry.attributes.position.array[(i + 1) * 3 + 2]
+                );
+                const v3 = new THREE.Vector3(
+                    geometry.attributes.position.array[(i + 2) * 3],
+                    geometry.attributes.position.array[(i + 2) * 3 + 1],
+                    geometry.attributes.position.array[(i + 2) * 3 + 2]
+                );
+                
+                // Calculate contribution of this triangle to volume
+                volume += v1.dot(v2.cross(v3)) / 6.0;
+            }
+            return Math.abs(volume);
+        }
+
+        // Function to count unique points
+        function countUniquePoints(points3D) {
+            const uniquePoints = new Set();
+            points3D.forEach(point => {
+                uniquePoints.add(`${point.x.toFixed(6)},${point.y.toFixed(6)},${point.z.toFixed(6)}`);
+            });
+            return uniquePoints.size;
+        }
+
+        // Function to create test connection line
+        function createTestConnection(geometry) {
+            const numFaces = geometry.attributes.position.count / 3;
+            const face1 = Math.floor(Math.random() * numFaces);
+            const face2 = Math.floor(Math.random() * (numFaces - 1));
+            const face2Adjusted = face2 >= face1 ? face2 + 1 : face2;
+            
+            const vertices1 = getFaceVertices(face1, geometry);
+            const vertices2 = getFaceVertices(face2Adjusted, geometry);
+            
+            const center1 = getFaceCenter(vertices1);
+            const center2 = getFaceCenter(vertices2);
+            
+            // Create a bright glowing red color
+            const arc = createArcBetweenPoints(center1, center2, new THREE.Color(1, 0.2, 0.2));
+            return arc;
+        }
+
+        // Function to create a gem from a magic square
+        function createGem(square) {
+            currentSquare = square;
+            
+            // Clear existing gem
+            while(scene.children.length > 2) { // Keep lights
+                scene.remove(scene.children[2]);
+            }
+            scene.add(axesHelper);
+            axesHelper.visible = document.getElementById('showAxes').checked;
+
+            const vertices = [];
+            const pointColors = [];
+            const points3D = []; // Store THREE.Vector3 points for convex hull
+
+            // Create vertices for each number in the square
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const value = square[i][j];
+                    // Scale x and y to [-0.5, 0.5] range
+                    const x = (j - 1.5) / 3;
+                    const y = (1.5 - i) / 3;
+                    // Scale z to roughly [-0.5, 0.5] range (since values are 1-16)
+                    const z = (value - 8.5) / 15;
+
+                    vertices.push(x, y, z);
+                    points3D.push(new THREE.Vector3(x, y, z));
+
+                    // Color based on value
+                    const hue = (value - 1) / 16;
+                    const color = new THREE.Color().setHSL(hue, 1, 0.5);
+                    pointColors.push(color.r, color.g, color.b);
+                }
+            }
+
+            // Create points
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(pointColors, 3));
+
+            const pointsMaterial = new THREE.PointsMaterial({
+                size: document.getElementById('pointSize').value,
+                vertexColors: true
+            });
+            currentPoints = new THREE.Points(geometry, pointsMaterial);
+            if (document.getElementById('showPoints').checked) {
+                scene.add(currentPoints);
+            }
+
+            // Create convex hull
+            const hullGeometry = new ConvexGeometry(points3D);
+            const hullMaterial = new THREE.MeshPhongMaterial({
+                transparent: true,
+                opacity: document.getElementById('hullOpacity').value,
+                side: THREE.FrontSide,
+                vertexColors: true,
+                shininess: 100,
+                flatShading: true
+            });
+            currentHull = new THREE.Mesh(hullGeometry, hullMaterial);
+            
+            // Color the faces using cached colors if available
+            colorSimilarFaces(square, hullGeometry);
+
+            if (document.getElementById('showHull').checked) {
+                scene.add(currentHull);
+            }
+
+            // Update square info in the grid
+            const gemView = document.getElementById('gemView');
+            // Remove existing info if any
+            const existingInfo = document.querySelector('.square-info');
+            if (existingInfo) existingInfo.remove();
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'square-info';
+            
+            // Calculate statistics
+            const numFaces = hullGeometry.attributes.position.count / 3;
+            const uniqueVertices = countUniquePoints(points3D);
+            const volume = calculateVolume(hullGeometry).toFixed(6);
+            const numPairedFaces = currentGroups.reduce((acc, group) => {
+                return acc + (group.length > 1 ? group.length : 0);
+            }, 0);
+            const pointsInsideHull = points3D.length - uniqueVertices;
+            
+            // Create stat rows with consistent formatting
+            const createStatRow = (label, value) => `
+                <div>
+                    <span class="stat-label">${label}:</span>
+                    <span class="stat-value">${value}</span>
+                </div>
+            `;
+            
+            infoDiv.innerHTML = `
+                ${createStatRow('Total Faces', numFaces)}
+                ${createStatRow('Paired Faces', numPairedFaces)}
+                ${createStatRow('Unique Vertices', uniqueVertices)}
+                ${createStatRow('Volume', volume)}
+                ${createStatRow('Interior Points', pointsInsideHull)}
+            `;
+            
+            gemView.appendChild(infoDiv);
+
+            // Create vectors from origin
+            const vectorsGroup = new THREE.Group();
+            points3D.forEach((point, index) => {
+                const direction = point.clone().normalize();
+                const length = point.length();
+                const arrowHelper = new THREE.ArrowHelper(
+                    direction,
+                    new THREE.Vector3(0, 0, 0),
+                    length,
+                    new THREE.Color().setHSL((index) / 16, 1, 0.5),
+                    0.1,
+                    0.05
+                );
+                vectorsGroup.add(arrowHelper);
+            });
+            currentVectors = vectorsGroup;
+            if (document.getElementById('showVectors').checked) {
+                scene.add(currentVectors);
+            }
+        }
+
+        // Handle visualization toggles
+        document.getElementById('showPoints').addEventListener('change', (e) => {
+            if (currentPoints) {
+                if (e.target.checked) scene.add(currentPoints);
+                else scene.remove(currentPoints);
+            }
+        });
+
+        document.getElementById('showHull').addEventListener('change', (e) => {
+            if (currentHull) {
+                if (e.target.checked) scene.add(currentHull);
+                else scene.remove(currentHull);
+            }
+        });
+
+        document.getElementById('showVectors').addEventListener('change', (e) => {
+            if (currentVectors) {
+                if (e.target.checked) scene.add(currentVectors);
+                else scene.remove(currentVectors);
+            }
+        });
+
+        document.getElementById('showAxes').addEventListener('change', (e) => {
+            axesHelper.visible = e.target.checked;
+        });
+
+        document.getElementById('pointSize').addEventListener('input', (e) => {
+            if (currentPoints) {
+                currentPoints.material.size = e.target.value;
+            }
+        });
+
+        document.getElementById('hullOpacity').addEventListener('input', (e) => {
+            if (currentHull) {
+                currentHull.material.opacity = e.target.value;
+            }
+        });
+
+        document.getElementById('colorFaces').addEventListener('click', () => {
+            if (currentHull && currentSquare) {
+                // Clear the caches when manually recoloring
+                const squareKey = JSON.stringify(currentSquare);
+                squareColorCache.delete(squareKey);
+                squareConnectionsCache.delete(squareKey);
+                colorSimilarFaces(currentSquare, currentHull.geometry);
+            }
+        });
+
+        // Handle view buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.view;
+                switch (view) {
+                    case 'front':
+                        camera.position.set(0, 0, 3);
+                        break;
+                    case 'back':
+                        camera.position.set(0, 0, -3);
+                        break;
+                    case 'left':
+                        camera.position.set(-3, 0, 0);
+                        break;
+                    case 'right':
+                        camera.position.set(3, 0, 0);
+                        break;
+                    case 'top':
+                        camera.position.set(0, 3, 0);
+                        break;
+                    case 'bottom':
+                        camera.position.set(0, -3, 0);
+                        break;
+                }
+                camera.lookAt(0, 0, 0);
+                controls.update();
+            });
+        });
+
+        function switchCamera(useOrthographic) {
+            // Store current camera position and target
+            const position = new THREE.Vector3();
+            const target = new THREE.Vector3();
+            camera.getWorldPosition(position);
+            controls.target.clone(target);
+            
+            // Switch camera
+            camera = useOrthographic ? orthographicCamera : perspectiveCamera;
+            
+            // Update camera position and controls
+            camera.position.copy(position);
+            controls.dispose(); // Clean up old controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.target.copy(target);
+            
+            if (useOrthographic) {
+                // Adjust orthographic camera zoom to match perspective view
+                const distance = position.length();
+                orthographicCamera.zoom = 1 / distance;
+                orthographicCamera.updateProjectionMatrix();
+            }
+            
+            controls.update();
+        }
+
+        // Add projection toggle handler
+        document.getElementById('orthographic').addEventListener('change', (e) => {
+            switchCamera(e.target.checked);
+        });
+
+        // Load and display magic squares
+        fetch('data/magic_squares_4x4.json')
+            .then(response => response.json())
+            .then(squares => {
+                const gridContainer = document.getElementById('squareGrid');
+                let selectedDiv = null;
+                
+                squares.forEach((square, index) => {
+                    const squareDiv = document.createElement('div');
+                    squareDiv.className = 'square-container';
+                    squareDiv.dataset.index = index;  // Add index as data attribute
+                    squareDiv.onclick = () => {
+                        if (selectedDiv) {
+                            selectedDiv.classList.remove('selected');
+                        }
+                        selectedDiv = squareDiv;
+                        squareDiv.classList.add('selected');
+                        createGem(square);
+                    };
+
+                    square.forEach(row => {
+                        row.forEach(value => {
+                            const cell = document.createElement('div');
+                            cell.className = 'square-cell';
+                            cell.textContent = value;
+                            squareDiv.appendChild(cell);
+                        });
+                    });
+
+                    gridContainer.appendChild(squareDiv);
+                });
+
+                // Create gem for first square
+                createGem(squares[0]);
+                gridContainer.firstChild.classList.add('selected');
+
+                // Add keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    const currentIndex = parseInt(selectedDiv.dataset.index);
+                    let newIndex;
+                    
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                            newIndex = (currentIndex - 1 + squares.length) % squares.length;
+                            break;
+                        case 'ArrowRight':
+                            newIndex = (currentIndex + 1) % squares.length;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    // Find and click the new square
+                    const newSquare = gridContainer.querySelector(`[data-index="${newIndex}"]`);
+                    if (newSquare) {
+                        // Scroll the new square into view
+                        newSquare.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        newSquare.click();
+                    }
+                });
+            });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const aspect = window.innerWidth * 0.7 / window.innerHeight;
+            
+            // Update perspective camera
+            perspectiveCamera.aspect = aspect;
+            perspectiveCamera.updateProjectionMatrix();
+            
+            // Update orthographic camera
+            orthographicCamera.left = -2 * aspect;
+            orthographicCamera.right = 2 * aspect;
+            orthographicCamera.updateProjectionMatrix();
+            
+            renderer.setSize(window.innerWidth * 0.7, window.innerHeight);
+        });
+    </script>
+</body>
+</html> 

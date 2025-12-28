@@ -94,6 +94,7 @@ function initVisualization() {
         showFaces: true,
         showVectors: false,
         showAxes: true,
+        normalizeZ: true,
         autoRotate: false
     });
     
@@ -207,6 +208,7 @@ function initEnumerationTab() {
         showFaces: true,
         showVectors: false,
         showAxes: true,
+        normalizeZ: true,
         autoRotate: false,
         pointSize: 0.05,
         hullOpacity: 1.0
@@ -215,8 +217,8 @@ function initEnumerationTab() {
     // Setup controls
     setupEnumerationControls();
     
-    // Load square grid
-    populateSquareGrid();
+    // Load square dropdown
+    populateSquareDropdown();
     
     enumerationInitialized = true;
 }
@@ -298,71 +300,33 @@ function setupEnumerationControls() {
     });
 }
 
-function populateSquareGrid() {
-    const grid = document.getElementById('square-grid');
-    if (!grid || allMagicSquares4x4.length === 0) return;
+function populateSquareDropdown() {
+    const selector = document.getElementById('square-selector');
+    if (!selector || allMagicSquares4x4.length === 0) return;
     
-    grid.innerHTML = '';
-    let selectedDiv = null;
+    selector.innerHTML = '';
     
+    // Create options for each square
     allMagicSquares4x4.forEach((square, index) => {
-        const squareDiv = document.createElement('div');
-        squareDiv.className = 'square-container';
-        squareDiv.dataset.index = index;
-        
-        squareDiv.onclick = () => {
-            if (selectedDiv) {
-                selectedDiv.classList.remove('selected');
-            }
-            selectedDiv = squareDiv;
-            squareDiv.classList.add('selected');
-            selectEnumSquare(square, index);
-        };
-        
-        // Create 4x4 grid
-        square.forEach(row => {
-            row.forEach(value => {
-                const cell = document.createElement('div');
-                cell.className = 'square-cell';
-                cell.textContent = value;
-                squareDiv.appendChild(cell);
-            });
-        });
-        
-        grid.appendChild(squareDiv);
+        const option = document.createElement('option');
+        option.value = index;
+        // Format: "Square 1: [1,2,15,16][12,14,3,5]..."
+        const firstRow = square[0].join(',');
+        option.textContent = `Square ${index + 1}: [${firstRow}]...`;
+        selector.appendChild(option);
+    });
+    
+    // Add change event listener
+    selector.addEventListener('change', (e) => {
+        const index = parseInt(e.target.value);
+        const square = allMagicSquares4x4[index];
+        selectEnumSquare(square, index);
     });
     
     // Select first square
     if (allMagicSquares4x4.length > 0) {
         selectEnumSquare(allMagicSquares4x4[0], 0);
-        grid.firstChild.classList.add('selected');
-        selectedDiv = grid.firstChild;
     }
-    
-    // Keyboard navigation
-    document.addEventListener('keydown', (e) => {
-        if (!enumerationInitialized || !selectedDiv) return;
-        
-        const currentIndex = parseInt(selectedDiv.dataset.index);
-        let newIndex;
-        
-        switch(e.key) {
-            case 'ArrowLeft':
-                newIndex = (currentIndex - 1 + allMagicSquares4x4.length) % allMagicSquares4x4.length;
-                break;
-            case 'ArrowRight':
-                newIndex = (currentIndex + 1) % allMagicSquares4x4.length;
-                break;
-            default:
-                return;
-        }
-        
-        const newSquare = grid.querySelector(`[data-index="${newIndex}"]`);
-        if (newSquare) {
-            newSquare.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            newSquare.click();
-        }
-    });
 }
 
 function selectEnumSquare(square, index) {

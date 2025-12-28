@@ -1,0 +1,11 @@
+{
+  "id": "magicGemWeb",
+  "title": "MagicGemWeb",
+  "oneLiner": "A web catalogue of magicGem demos and apps",
+  "demoUrl": "https://kylemath.github.io/magicGemWeb",
+  "screenshot": "https://raw.githubusercontent.com/kylemath/magicGemWeb/main/screenshot.png",
+  "kind": "project",
+  "categories": ["math", "web", "interactive", "magicGem"],
+  "tags": ["math", "web", "interactive", "magicGem"],
+  "status": "published"
+}

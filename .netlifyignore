@@ -1,0 +1,27 @@
+# Python virtual environment
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Python backend (not needed for static deployment)
+server.py
+
+# Development files
+.DS_Store
+*.log
+*.tmp
+
+# Git files
+.git/
+.gitignore
+
+# Documentation that's not needed in production
+PAPERCRAFT_FEATURES.md
+PAPERCRAFT_IMPLEMENTATION_SUMMARY.md
+PAPERCRAFT_QUICKSTART.md
+TEMPLATE_ANATOMY.md
+
+# Python requirements (not needed for frontend-only deployment)
+requirements.txt
+

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Gems: A Geometric Journey into Magic Squares</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
+    <!-- MathJax for equations -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="gem-icon"></div>
+                <h1>Magic Gems</h1>
+            </div>
+            <p class="tagline">A Geometric Framework for Magic Squares</p>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+        <button class="tab-btn active" data-tab="intro">
+            <span class="tab-icon">✨</span>
+            Introduction
+        </button>
+        <button class="tab-btn" data-tab="visualization">
+            <span class="tab-icon">🔮</span>
+            3D Visualization
+        </button>
+        <button class="tab-btn" data-tab="energy">
+            <span class="tab-icon">⚡</span>
+            Energy Landscape
+        </button>
+        <button class="tab-btn" data-tab="theorems">
+            <span class="tab-icon">📐</span>
+            New Theorems
+        </button>
+        <button class="tab-btn" data-tab="explore">
+            <span class="tab-icon">🧪</span>
+            Explore
+        </button>
+        <button class="tab-btn" data-tab="enumeration">
+            <span class="tab-icon">🔢</span>
+            4×4 Gallery
+        </button>
+        <button class="tab-btn" data-tab="papercraft">
+            <span class="tab-icon">📄</span>
+            Paper Nets 3×3
+        </button>
+        <button class="tab-btn" data-tab="papercraft4x4">
+            <span class="tab-icon">📐</span>
+            Paper Nets 4×4
+        </button>
+        <button class="tab-btn" data-tab="builder">
+            <span class="tab-icon">🎨</span>
+            Interactive Builder
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Introduction Tab -->
+        <section id="intro" class="tab-content active">
+            <div class="intro-hero">
+                <h2>What is a Magic Square?</h2>
+                <p class="lead">A magic square is an n×n grid of distinct positive integers where every row, column, and both main diagonals sum to the same value — the <strong>magic constant</strong>.</p>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h3>The Lo Shu Square</h3>
+                    <p>The oldest known magic square, dating back to ancient China (~2200 BCE).</p>
+                    <div class="magic-square-display" id="lo-shu-display">
+                        <div class="square-grid n3">
+                            <div class="cell">2</div><div class="cell">7</div><div class="cell">6</div>
+                            <div class="cell">9</div><div class="cell center">5</div><div class="cell">1</div>
+                            <div class="cell">4</div><div class="cell">3</div><div class="cell">8</div>
+                        </div>
+                    </div>
+                    <p class="formula">Magic constant: M(3) = 15</p>
+                </div>
+
+                <div class="card">
+                    <h3>The Magic Constant</h3>
+                    <p>For any n×n magic square:</p>
+                    <div class="equation">
+                        \[ M(n) = \frac{n(n^2 + 1)}{2} \]
+                    </div>
+                    <table class="data-table">
+                        <tr><th>n</th><th>M(n)</th><th>Magic Squares</th></tr>
+                        <tr><td>3</td><td>15</td><td>8</td></tr>
+                        <tr><td>4</td><td>34</td><td>7,040</td></tr>
+                        <tr><td>5</td><td>65</td><td>~275 million</td></tr>
+                    </table>
+                </div>
+
+                <div class="card featured">
+                    <h3>The Magic Gem Framework</h3>
+                    <p>We introduce a revolutionary new representation: transforming each magic square into a <strong>3D polyhedron</strong> called a Magic Gem.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-num">1</span>
+                            <span>Place the grid centered at the origin</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">2</span>
+                            <span>Cell values become z-coordinates</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">3</span>
+                            <span>Compute the convex hull → Magic Gem</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="discovery-banner">
+                <h3>🔬 Key Discovery</h3>
+                <p>Magic squares are characterized by <strong>zero covariance</strong> between position and value. They are the unique ground states of a natural energy functional — isolated minima in a vast landscape of arrangements.</p>
+            </div>
+
+            <div class="section">
+                <h2>The Zero-Covariance Theorem</h2>
+                <div class="theorem-box">
+                    <p><strong>Theorem:</strong> An arrangement S is a magic square if and only if:</p>
+                    <div class="equation">
+                        \[ E(S) = \text{Cov}(X,Z)^2 + \text{Cov}(Y,Z)^2 + \text{Cov}(D_{\text{main}},Z)^2 + \text{Cov}(D_{\text{anti}},Z)^2 = 0 \]
+                    </div>
+                    <p>This energy functional measures the "imbalance" of an arrangement. Magic squares achieve perfect balance.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3D Visualization Tab -->
+        <section id="visualization" class="tab-content">
+            <div class="viz-container">
+                <div class="viz-sidebar">
+                    <h3>Magic Gem Controls</h3>
+                    
+                    <div class="control-group">
+                        <label>Select Order (n)</label>
+                        <div class="button-group">
+                            <button class="order-btn active" data-n="3">n = 3</button>
+                            <button class="order-btn" data-n="4">n = 4</button>
+                            <button class="order-btn" data-n="5">n = 5</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Display Options</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="showVertices" checked>
+                                <span>Show Vertices</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="showEdges" checked>
+                                <span>Show Edges</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="showFaces" checked>
+                                <span>Show Faces</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="showVectors">
+                                <span>Show Vectors</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="showAxes" checked>
+                                <span>Show Axes</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="normalizeZ">
+                                <span>Normalize Z</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Animation</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="autoRotate">
+                                <span>Auto Rotate</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="info-panel">
+                        <h4>Current Magic Square</h4>
+                        <div id="current-square-display" class="mini-square"></div>
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-label">Hull Volume</span>
+                                <span class="stat-value" id="stat-volume">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Hull Vertices</span>
+                                <span class="stat-value" id="stat-vertices">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Energy</span>
+                                <span class="stat-value" id="stat-energy">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="viz-main">
+                    <div id="gem-canvas" class="canvas-container"></div>
+                    <div class="viz-footer">
+                        <p>Drag to rotate • Scroll to zoom • Right-click to pan</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Energy Landscape Tab -->
+        <section id="energy" class="tab-content">
+            <h2>The Covariance Energy Landscape</h2>
+            <p class="lead">Magic squares are the unique ground states of a natural energy functional. They sit at the bottom of deep wells in a vast, rugged landscape.</p>
+
+            <div class="energy-grid">
+                <div class="card">
+                    <h3>Energy Distribution (n=3)</h3>
+                    <div id="energy-histogram-3" class="plot-container"></div>
+                    <p class="caption">All 362,880 permutations analyzed. Only 8 have E=0.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Perturbation Analysis</h3>
+                    <div id="perturbation-plot" class="plot-container"></div>
+                    <p class="caption">Every single-swap perturbation increases energy.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Scaling Properties</h3>
+                    <div id="scaling-plot" class="plot-container"></div>
+                    <p class="caption">Peak energy scales as O(n²), but gap scales as O(1/n⁴).</p>
+                </div>
+
+                <div class="card wide">
+                    <h3>Interactive Energy Explorer</h3>
+                    <p>Click cells to swap values and watch the energy change in real-time.</p>
+                    <div class="energy-explorer">
+                        <div class="explorer-square" id="explorer-square"></div>
+                        <div class="energy-meter">
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="energy-fill"></div>
+                            </div>
+                            <div class="meter-label">
+                                <span>Energy: </span>
+                                <span id="explorer-energy">0.000</span>
+                            </div>
+                            <button id="reset-explorer" class="btn">Reset to Magic</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="discovery-banner">
+                <h3>🔍 New Discovery: Many Local Minima</h3>
+                <p>For n=3, there are <strong>344 local minima</strong> in the energy landscape, not just the 8 magic squares. Magic squares are the unique <em>global</em> minima, but the landscape is highly rugged with many metastable states.</p>
+            </div>
+        </section>
+
+        <!-- New Theorems Tab -->
+        <section id="theorems" class="tab-content">
+            <h2>New Mathematical Discoveries</h2>
+            <p class="lead">The Magic Gem framework reveals several new theorems and patterns that extend our understanding of magic squares.</p>
+
+            <div class="theorem-cards">
+                <div class="theorem-card verified">
+                    <div class="status-badge">✓ Verified</div>
+                    <h3>Theorem A: Exact Variance Formulas</h3>
+                    <p>For any n×n magic square, the covariance matrix has eigenvalues:</p>
+                    <div class="equation">
+                        \[ \text{Var}(Z) = \frac{n^4 - 1}{12}, \quad \text{Var}(X) = \text{Var}(Y) = \frac{n^2 - 1}{12} \]
+                    </div>
+                    <div class="verification-table">
+                        <table>
+                            <tr><th>n</th><th>Var(Z) Theory</th><th>Var(Z) Actual</th><th>Match</th></tr>
+                            <tr><td>3</td><td>6.667</td><td>6.667</td><td>✓</td></tr>
+                            <tr><td>5</td><td>52.000</td><td>52.000</td><td>✓</td></tr>
+                            <tr><td>7</td><td>200.000</td><td>200.000</td><td>✓</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="theorem-card verified">
+                    <div class="status-badge">✓ Verified</div>
+                    <h3>Theorem B: Extended Moment Vanishing</h3>
+                    <p>All third-order cross-moments vanish for magic squares:</p>
+                    <div class="equation">
+                        \[ \mathbb{E}[X^2 Z] = \mathbb{E}[Y^2 Z] = \mathbb{E}[XYZ] = 0 \]
+                    </div>
+                    <p class="note">This extends the zero-covariance property to higher-order moments, suggesting a deeper statistical balance.</p>
+                </div>
+
+                <div class="theorem-card verified">
+                    <div class="status-badge">✓ Verified</div>
+                    <h3>Theorem C: Constant 12 Hull Vertices</h3>
+                    <p>For Siamese-constructed magic squares with n ≥ 5:</p>
+                    <div class="highlight">The convex hull has exactly <strong>12 vertices</strong>, independent of n.</div>
+                    <div class="verification-table">
+                        <table>
+                            <tr><th>n</th><th>Total Points</th><th>Hull Vertices</th><th>Interior</th></tr>
+                            <tr><td>3</td><td>9</td><td>8</td><td>1</td></tr>
+                            <tr><td>5</td><td>25</td><td>12</td><td>13</td></tr>
+                            <tr><td>7</td><td>49</td><td>12</td><td>37</td></tr>
+                            <tr><td>9</td><td>81</td><td>12</td><td>69</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="theorem-card verified">
+                    <div class="status-badge">✓ Verified</div>
+                    <h3>Theorem D: Modular Preservation</h3>
+                    <p>Magic squares remain "magic mod p" under reduction modulo any prime p:</p>
+                    <div class="equation">
+                        \[ S \text{ magic with } M(n) \implies S \mod p \text{ magic with } M(n) \mod p \]
+                    </div>
+                    <p class="note">Verified for n = 3, 5, 7 and p = 2, 3, 5, 7, 11, 13.</p>
+                </div>
+
+                <div class="theorem-card conjecture">
+                    <div class="status-badge">⚡ Conjecture</div>
+                    <h3>Conjecture: Refined Gap Scaling</h3>
+                    <p>The minimum perturbation gap scales as:</p>
+                    <div class="equation">
+                        \[ \Delta_{\min} \cdot n^4 \approx c \quad \text{(constant)} \]
+                    </div>
+                    <p class="note">This suggests O(1/n⁴) scaling, not O(1/n²) as previously thought.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4x4 Enumeration Tab -->
+        <section id="enumeration" class="tab-content">
+            <h2>All 4×4 Magic Squares</h2>
+            <p class="lead">Explore all unique 4×4 magic squares. Click any square to view its Magic Gem in 3D.</p>
+            
+            <div class="enumeration-container">
+                <div class="enumeration-sidebar">
+                    <h3>Square Gallery</h3>
+                    <div class="enum-controls">
+                        <div class="control-group">
+                            <label>Visualization:</label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="enum-showPoints">
+                                <span>Points</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="enum-showHull" checked>
+                                <span>Convex Hull</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="enum-showVectors">
+                                <span>Vectors</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="enum-showAxes" checked>
+                                <span>Axes</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="enum-normalizeZ">
+                                <span>Normalize Z</span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <label>Point Size: <span id="enum-pointSizeValue">0.05</span></label>
+                            <input type="range" id="enum-pointSize" min="0.05" max="0.2" step="0.01" value="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>Hull Opacity: <span id="enum-hullOpacityValue">1.0</span></label>
+                            <input type="range" id="enum-hullOpacity" min="0.1" max="1.0" step="0.1" value="1.0">
+                        </div>
+                        <div class="control-group">
+                            <button id="enum-colorFaces" class="btn">Color Similar Faces</button>
+                            <label>Similarity ε:</label>
+                            <input type="number" id="enum-epsilon" value="0.001" step="0.001" min="0.0001" max="0.1">
+                        </div>
+                    </div>
+                    <div id="square-grid" class="square-grid"></div>
+                </div>
+                
+                <div class="enumeration-main">
+                    <div id="enum-gem-canvas" class="canvas-container"></div>
+                    <div class="enum-info">
+                        <h4>Selected Square #<span id="enum-square-num">1</span></h4>
+                        <div class="enum-stats">
+                            <div class="stat">
+                                <span class="stat-label">Total Faces</span>
+                                <span class="stat-value" id="enum-stat-faces">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Paired Faces</span>
+                                <span class="stat-value" id="enum-stat-paired">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Unique Vertices</span>
+                                <span class="stat-value" id="enum-stat-vertices">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Volume</span>
+                                <span class="stat-value" id="enum-stat-volume">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Interior Points</span>
+                                <span class="stat-value" id="enum-stat-interior">—</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view-controls">
+                        <button class="view-btn" data-view="front">Front</button>
+                        <button class="view-btn" data-view="back">Back</button>
+                        <button class="view-btn" data-view="left">Left</button>
+                        <button class="view-btn" data-view="right">Right</button>
+                        <button class="view-btn" data-view="top">Top</button>
+                        <button class="view-btn" data-view="bottom">Bottom</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Paper Nets Tab -->
+        <section id="papercraft" class="tab-content">
+            <h2>Paper Craft Templates - 3×3 Magic Gems</h2>
+            <p class="lead">Unfold the 3D Magic Gems into flat patterns. Same-colored faces have identical geometry. Start with the Lo Shu square!</p>
+            
+            <div class="papercraft-container">
+                <div class="papercraft-sidebar">
+                    <h3>Square Gallery (3×3)</h3>
+                    <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        All 8 unique 3×3 magic squares (D₄ orbit of Lo Shu). Simpler geometry with only 8 faces!
+                    </p>
+                    <div class="papercraft-controls">
+                        <div class="control-group">
+                            <button id="paper-colorFaces" class="btn">Color Similar Faces</button>
+                            <label>Similarity ε:</label>
+                            <input type="number" id="paper-epsilon" value="0.001" step="0.001" min="0.0001" max="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper-showLabels" checked>
+                                <span>Show Face Labels</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper-showEdgeLength">
+                                <span>Show Edge Lengths</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper-showGlueTabs" checked>
+                                <span>Show Glue Tabs</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper-showCellValues" checked>
+                                <span>Show Cell Values</span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <button id="paper-generate-variation" class="btn">🔄 Generate Variation</button>
+                            <p style="font-size: 0.85em; color: var(--text-secondary); margin-top: 0.5rem;">
+                                Creates a different net layout by starting from a different face
+                            </p>
+                        </div>
+                        <div class="control-group">
+                            <button id="paper-export" class="btn primary">📥 Download PNG</button>
+                            <button id="paper-print" class="btn">🖨️ Print</button>
+                        </div>
+                    </div>
+                    <div id="paper-square-grid" class="square-grid"></div>
+                </div>
+                
+                <div class="papercraft-main">
+                    <div class="papercraft-split-view">
+                        <div class="papercraft-3d-section">
+                            <h4>3D Magic Gem</h4>
+                            <div id="paper-gem-canvas" class="canvas-container" style="height: 400px;"></div>
+                            <div class="view-controls">
+                                <button class="view-btn" data-view="front">Front</button>
+                                <button class="view-btn" data-view="top">Top</button>
+                                <button class="view-btn" data-view="iso">Iso</button>
+                            </div>
+                        </div>
+                        <div class="papercraft-net-section">
+                            <h4>2D Paper Net</h4>
+                            <div class="papercraft-canvas-container">
+                                <canvas id="paper-canvas" width="800" height="800"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="paper-info">
+                        <h4>Selected Square #<span id="paper-square-num">1</span></h4>
+                        <div class="paper-stats">
+                            <div class="stat">
+                                <span class="stat-label">Total Faces</span>
+                                <span class="stat-value" id="paper-stat-faces">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Face Groups</span>
+                                <span class="stat-value" id="paper-stat-groups">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Unique Edges</span>
+                                <span class="stat-value" id="paper-stat-edges">—</span>
+                            </div>
+                        </div>
+                        <p class="paper-hint">💡 Compare the 3D gem (left) with the flat net (right). Same-colored faces match!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Paper Nets 4x4 Tab -->
+        <section id="papercraft4x4" class="tab-content">
+            <h2>Paper Craft Templates - 4×4 Magic Gems</h2>
+            <p class="lead">Unfold 4×4 Magic Gems into flat patterns. More complex geometry with ~20 faces!</p>
+            
+            <div class="papercraft-container">
+                <div class="papercraft-sidebar">
+                    <h3>Square Gallery (4×4)</h3>
+                    <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        Browse 4×4 magic squares. Each creates a unique polyhedron with richer geometry!
+                    </p>
+                    <div class="papercraft-controls">
+                        <div class="control-group">
+                            <button id="paper4x4-colorFaces" class="btn">Color Similar Faces</button>
+                            <label>Similarity ε:</label>
+                            <input type="number" id="paper4x4-epsilon" value="0.001" step="0.001" min="0.0001" max="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper4x4-showLabels" checked>
+                                <span>Show Face Labels</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper4x4-showEdgeLength">
+                                <span>Show Edge Lengths</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper4x4-showGlueTabs" checked>
+                                <span>Show Glue Tabs</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="paper4x4-showCellValues" checked>
+                                <span>Show Cell Values</span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <button id="paper4x4-generate-variation" class="btn">🔄 Generate Variation</button>
+                            <p style="font-size: 0.85em; color: var(--text-secondary); margin-top: 0.5rem;">
+                                Creates a different net layout by starting from a different face
+                            </p>
+                        </div>
+                        <div class="control-group">
+                            <button id="paper4x4-export" class="btn primary">📥 Download PNG</button>
+                            <button id="paper4x4-print" class="btn">🖨️ Print</button>
+                        </div>
+                    </div>
+                    <div id="paper4x4-square-grid" class="square-grid"></div>
+                </div>
+                
+                <div class="papercraft-main">
+                    <div class="papercraft-split-view">
+                        <div class="papercraft-3d-section">
+                            <h4>3D Magic Gem</h4>
+                            <div id="paper4x4-gem-canvas" class="canvas-container" style="height: 400px;"></div>
+                            <div class="view-controls">
+                                <button class="view-btn" data-view="front">Front</button>
+                                <button class="view-btn" data-view="top">Top</button>
+                                <button class="view-btn" data-view="iso">Iso</button>
+                            </div>
+                        </div>
+                        <div class="papercraft-net-section">
+                            <h4>2D Paper Net</h4>
+                            <div class="papercraft-canvas-container">
+                                <canvas id="paper4x4-canvas" width="800" height="800"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="paper-info">
+                        <h4>Selected Square #<span id="paper4x4-square-num">1</span></h4>
+                        <div class="paper-stats">
+                            <div class="stat">
+                                <span class="stat-label">Total Faces</span>
+                                <span class="stat-value" id="paper4x4-stat-faces">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Face Groups</span>
+                                <span class="stat-value" id="paper4x4-stat-groups">—</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Unique Edges</span>
+                                <span class="stat-value" id="paper4x4-stat-edges">—</span>
+                            </div>
+                        </div>
+                        <p class="paper-hint">💡 Compare the 3D gem (left) with the flat net (right). Same-colored faces match!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Explore Tab -->
+        <section id="explore" class="tab-content">
+            <h2>Interactive Explorer</h2>
+            <p class="lead">Build your own magic squares and explore their properties in real-time.</p>
+
+            <div class="explore-container">
+                <div class="explore-panel">
+                    <h3>Create Magic Square</h3>
+                    
+                    <div class="control-group">
+                        <label>Order</label>
+                        <select id="explore-order">
+                            <option value="3">3×3</option>
+                            <option value="4">4×4</option>
+                            <option value="5">5×5</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Construction Method</label>
+                        <select id="explore-method">
+                            <option value="siamese">Siamese (odd n)</option>
+                            <option value="doubly-even">Doubly-Even (n÷4)</option>
+                            <option value="random">Random Arrangement</option>
+                        </select>
+                    </div>
+
+                    <button id="generate-square" class="btn primary">Generate</button>
+                    <button id="apply-d4" class="btn">Apply Random D₄</button>
+
+                    <div class="square-editor">
+                        <h4>Current Arrangement</h4>
+                        <div id="editable-square" class="editable-square"></div>
+                        <p class="hint">Click cells to swap values</p>
+                    </div>
+                </div>
+
+                <div class="explore-results">
+                    <div class="result-card">
+                        <h4>Properties</h4>
+                        <div class="property-list">
+                            <div class="property">
+                                <span class="prop-name">Is Magic?</span>
+                                <span class="prop-value" id="prop-is-magic">—</span>
+                            </div>
+                            <div class="property">
+                                <span class="prop-name">Energy E(S)</span>
+                                <span class="prop-value" id="prop-energy">—</span>
+                            </div>
+                            <div class="property">
+                                <span class="prop-name">Cov(X,Z)</span>
+                                <span class="prop-value" id="prop-cov-xz">—</span>
+                            </div>
+                            <div class="property">
+                                <span class="prop-name">Cov(Y,Z)</span>
+                                <span class="prop-value" id="prop-cov-yz">—</span>
+                            </div>
+                            <div class="property">
+                                <span class="prop-name">Determinant</span>
+                                <span class="prop-value" id="prop-det">—</span>
+                            </div>
+                            <div class="property">
+                                <span class="prop-name">Hull Vertices</span>
+                                <span class="prop-value" id="prop-hull">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>Row/Column Sums</h4>
+                        <div id="sum-display" class="sum-display"></div>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>Eigenvalues</h4>
+                        <div id="eigenvalue-display" class="eigenvalue-display"></div>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>Covariance Matrix</h4>
+                        <div id="cov-matrix-display" class="matrix-display"></div>
+                    </div>
+                </div>
+
+                <div class="explore-viz">
+                    <h4>3D Magic Gem Preview</h4>
+                    <div id="explore-gem-canvas" class="mini-canvas"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Builder Tab -->
+        <section id="builder" class="tab-content">
+            <h2>Interactive Paper Craft Builder</h2>
+            <p class="lead">Drag, rotate, and snap triangles together. Explore symmetries and build larger shapes!</p>
+            
+            <div class="builder-container">
+                <div class="builder-sidebar">
+                    <h3>Controls</h3>
+                    
+                    <div class="control-group">
+                        <button id="builder-reset" class="btn">🔄 Reset All</button>
+                        <button id="builder-explode" class="btn">💥 Explode</button>
+                        <button id="builder-auto-fold" class="btn">🎁 Auto-Fold</button>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 0.5rem;">Selected Piece Actions:</label>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="builder-flip-h" class="btn" style="flex: 1; min-width: 100px;">↔️ Flip H</button>
+                            <button id="builder-flip-v" class="btn" style="flex: 1; min-width: 100px;">↕️ Flip V</button>
+                        </div>
+                        <button id="builder-unpair" class="btn" style="width: 100%; margin-top: 0.5rem;">🔓 Unpair/Disconnect</button>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="checkbox">
+                            <input type="checkbox" id="builder-show-edges" checked>
+                            <span>Highlight Matching Edges</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="builder-snap-enabled" checked>
+                            <span>Enable Snapping</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="builder-show-labels" checked>
+                            <span>Show Face Labels</span>
+                        </label>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Snap Distance: <span id="builder-snap-distance-value">0.2</span></label>
+                        <input type="range" id="builder-snap-distance" min="0.1" max="1.0" step="0.05" value="0.2">
+                    </div>
+                    
+                    <div class="info-panel">
+                        <h4>Instructions</h4>
+                        <ul style="font-size: 0.9em; line-height: 1.6; padding-left: 1.5rem;">
+                            <li><strong>Left-click drag:</strong> Move triangle</li>
+                            <li><strong>Right-click:</strong> Rotate 60°</li>
+                            <li><strong>Shift + drag:</strong> Rotate freely</li>
+                            <li><strong>H key:</strong> Flip horizontally</li>
+                            <li><strong>V key:</strong> Flip vertically</li>
+                            <li><strong>U or D key:</strong> Unpair/disconnect</li>
+                            <li><strong>R key:</strong> Rotate 60°</li>
+                            <li><strong>Near edges:</strong> Auto-snap when aligned</li>
+                            <li><strong>Green glow:</strong> Compatible edges</li>
+                            <li><strong>Connected pieces:</strong> Move as group</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-panel">
+                        <h4>Statistics</h4>
+                        <div class="stat">
+                            <span class="stat-label">Pieces</span>
+                            <span class="stat-value" id="builder-stat-pieces">12</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Connected Groups</span>
+                            <span class="stat-value" id="builder-stat-groups">12</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Snapped Edges</span>
+                            <span class="stat-value" id="builder-stat-snapped">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="builder-main">
+                    <div id="builder-canvas" class="builder-canvas"></div>
+                    <div class="builder-hint">
+                        <p>💡 Try building the original magic gem by snapping all pieces together!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Magic Gems: A Geometric Framework for Magic Squares</p>
+            <p class="footer-links">
+                <a href="https://github.com/kylemath/MagicGem" target="_blank">GitHub</a> •
+                <a href="https://arxiv.org" target="_blank">Paper</a> •
+                <a href="https://kylemath.github.io/MagicGemWebpage/" target="_blank">Original Demo</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/magicSquares.js"></script>
+    <script src="js/plots.js"></script>
+    <script src="js/papercraft.js"></script>
+    <script type="module" src="js/magicGem3D.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

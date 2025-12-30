@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrainment: Order Emerging from Chaos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.85);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            max-width: 350px;
+        }
+        #info h1 { font-size: 16px; color: #4ecdc4; margin-bottom: 12px; }
+        #info p { font-size: 11px; line-height: 1.7; color: #aaa; margin-bottom: 10px; }
+        
+        .phase-indicator {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .chaos { background: #ff6b6b; }
+        .entraining { background: #f9ca24; color: #000; }
+        .locked { background: #4ecdc4; color: #000; }
+        
+        #balance-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.85);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 280px;
+        }
+        #balance-panel h3 { font-size: 13px; color: #4ecdc4; margin-bottom: 15px; }
+        
+        .cov-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        .cov-label { width: 60px; }
+        .cov-bar-container {
+            flex: 1;
+            height: 10px;
+            background: #222;
+            border-radius: 5px;
+            margin: 0 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .cov-bar {
+            position: absolute;
+            height: 100%;
+            transition: width 0.1s, left 0.1s;
+            border-radius: 5px;
+        }
+        .cov-bar.positive { background: linear-gradient(90deg, #333 0%, #ff6b6b 100%); right: 50%; }
+        .cov-bar.negative { background: linear-gradient(90deg, #4ecdc4 0%, #333 100%); left: 50%; }
+        .cov-center {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #555;
+        }
+        .cov-val { width: 50px; text-align: right; font-family: monospace; }
+        
+        #total-imbalance {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            text-align: center;
+        }
+        #total-val {
+            font-size: 28px;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        #sync-meter {
+            margin-top: 10px;
+            height: 6px;
+            background: #222;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        #sync-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #f9ca24, #4ecdc4);
+            transition: width 0.3s;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.85);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        #controls button {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-family: inherit;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        #controls button:hover { background: #444; }
+        #controls button.active { background: #4ecdc4; color: #000; }
+        #controls button.warning { background: #f9ca24; color: #000; }
+        
+        #controls label {
+            display: block;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #888;
+        }
+        #controls input[type="range"] {
+            width: 200px;
+            margin-top: 5px;
+        }
+        
+        #history {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.85);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        #history h4 { font-size: 11px; color: #888; margin-bottom: 10px; }
+        #history-canvas {
+            background: #111;
+            border-radius: 4px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulsing { animation: pulse 0.5s infinite; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>Entrainment: Order from Chaos</h1>
+        <div class="phase-indicator chaos" id="phase-label">CHAOS</div>
+        <p id="phase-description">
+            Particles orbit randomly on independent paths. 
+            The system is far from balance—covariances fluctuate wildly.
+        </p>
+        <p style="font-size: 10px; color: #666; margin-top: 10px;">
+            Like a crowd before a clap synchronizes,<br>
+            or oscillators before phase-locking,<br>
+            or the wobble before it settles.
+        </p>
+    </div>
+    
+    <div id="balance-panel">
+        <h3>Covariance Balance (Entrainment Progress)</h3>
+        
+        <div class="cov-row">
+            <span class="cov-label">c₁ Row</span>
+            <div class="cov-bar-container">
+                <div class="cov-center"></div>
+                <div class="cov-bar" id="c1-bar"></div>
+            </div>
+            <span class="cov-val" id="c1-val">0.00</span>
+        </div>
+        <div class="cov-row">
+            <span class="cov-label">c₂ Col</span>
+            <div class="cov-bar-container">
+                <div class="cov-center"></div>
+                <div class="cov-bar" id="c2-bar"></div>
+            </div>
+            <span class="cov-val" id="c2-val">0.00</span>
+        </div>
+        <div class="cov-row">
+            <span class="cov-label">c₃ Row²</span>
+            <div class="cov-bar-container">
+                <div class="cov-center"></div>
+                <div class="cov-bar" id="c3-bar"></div>
+            </div>
+            <span class="cov-val" id="c3-val">0.00</span>
+        </div>
+        <div class="cov-row">
+            <span class="cov-label">c₄ Col²</span>
+            <div class="cov-bar-container">
+                <div class="cov-center"></div>
+                <div class="cov-bar" id="c4-bar"></div>
+            </div>
+            <span class="cov-val" id="c4-val">0.00</span>
+        </div>
+        
+        <div id="total-imbalance">
+            <div style="font-size: 11px; color: #888;">Total Imbalance</div>
+            <div id="total-val" style="color: #ff6b6b;">0.000</div>
+            <div id="sync-meter"><div id="sync-fill" style="width: 0%"></div></div>
+            <div style="font-size: 10px; color: #666; margin-top: 5px;">Synchronization: <span id="sync-pct">0%</span></div>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <button id="chaosBtn" class="active">🌀 Pure Chaos</button>
+        <button id="entrainBtn">🔄 Begin Entrainment</button>
+        <button id="resetBtn">↻ Reset</button>
+        <br>
+        <label>
+            Entrainment Force:
+            <input type="range" id="forceSlider" min="0" max="100" value="20">
+            <span id="forceVal">20%</span>
+        </label>
+        <label>
+            Simulation Speed:
+            <input type="range" id="speedSlider" min="1" max="100" value="50">
+        </label>
+    </div>
+    
+    <div id="history">
+        <h4>Imbalance History</h4>
+        <canvas id="history-canvas" width="200" height="80"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // Dürer's magic square (target configuration)
+        const DURER = [
+            [16, 3, 2, 13],
+            [5, 10, 11, 8],
+            [9, 6, 7, 12],
+            [4, 15, 14, 1]
+        ];
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+        
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        camera.position.set(25, 18, 25);
+        
+        // Nucleus
+        const nucleus = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff4444 })
+        );
+        scene.add(nucleus);
+        nucleus.add(new THREE.PointLight(0xff4444, 2, 8));
+        
+        // State
+        let mode = 'chaos'; // 'chaos', 'entraining', 'locked'
+        let entrainmentForce = 0.2;
+        let speedMultiplier = 1;
+        const history = [];
+        const maxHistory = 200;
+        
+        // Color
+        function getColor(value) {
+            const t = (value - 1) / 15;
+            return new THREE.Color().setHSL(0.6 - t * 0.5, 0.8, 0.5 + t * 0.2);
+        }
+        
+        // Particles with orbital state
+        const particles = [];
+        
+        function initParticles() {
+            particles.forEach(p => {
+                scene.remove(p.mesh);
+                if (p.orbit) scene.remove(p.orbit);
+            });
+            particles.length = 0;
+            
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const value = DURER[i][j];
+                    const radius = value;
+                    
+                    // Random initial orbital
+                    const axis = new THREE.Vector3(
+                        Math.random() - 0.5,
+                        Math.random() - 0.5,
+                        Math.random() - 0.5
+                    ).normalize();
+                    
+                    // Target position for the locked state: Magic Gem shape
+                    // x = col position, y = value (height!), z = row position
+                    const center = 1.5;
+                    const meanVal = 8.5;
+                    const scale = 2;
+                    const targetPos = new THREE.Vector3(
+                        (j - center) * scale,      // x from column
+                        (value - meanVal) * 0.8,   // y from VALUE (the height!)
+                        (i - center) * scale       // z from row
+                    );
+                    
+                    // Target axis still used for orbit alignment
+                    const targetAxis = new THREE.Vector3(0, 1, 0);
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const targetAngle = Math.atan2(i - 1.5, j - 1.5); // Based on grid position
+                    
+                    const speed = 0.3 / Math.sqrt(value);
+                    
+                    const geometry = new THREE.SphereGeometry(0.4, 16, 16);
+                    const material = new THREE.MeshBasicMaterial({
+                        color: getColor(value),
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.add(new THREE.PointLight(getColor(value), 0.3, 2));
+                    
+                    // Label
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 64; canvas.height = 64;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 32px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(value.toString(), 32, 32);
+                    const texture = new THREE.CanvasTexture(canvas);
+                    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, opacity: 0.8 }));
+                    sprite.scale.set(1, 1, 1);
+                    mesh.add(sprite);
+                    
+                    // Orbit ring
+                    const orbitGeometry = new THREE.RingGeometry(radius - 0.03, radius + 0.03, 64);
+                    const orbitMaterial = new THREE.MeshBasicMaterial({
+                        color: getColor(value),
+                        transparent: true,
+                        opacity: 0.15,
+                        side: THREE.DoubleSide
+                    });
+                    const orbitRing = new THREE.Mesh(orbitGeometry, orbitMaterial);
+                    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), axis);
+                    orbitRing.quaternion.copy(q);
+                    
+                    scene.add(mesh);
+                    scene.add(orbitRing);
+                    
+                    particles.push({
+                        mesh,
+                        orbit: orbitRing,
+                        radius,
+                        axis: axis.clone(),
+                        targetAxis: targetAxis.clone(),
+                        targetPos: targetPos.clone(),  // 3D target position for gem shape
+                        angle,
+                        targetAngle,
+                        speed,
+                        value,
+                        row: i,
+                        col: j
+                    });
+                }
+            }
+        }
+        
+        initParticles();
+        
+        // Grid
+        const grid = new THREE.GridHelper(40, 40, 0x222222, 0x111111);
+        grid.position.y = -2;
+        scene.add(grid);
+        
+        // Compute covariances based on current 3D positions
+        // Measures how close particles are to balanced configuration
+        function computeCovariances() {
+            // Compute distance to target (gem shape) weighted by value
+            let totalDistSq = 0;
+            let maxDist = 0;
+            
+            // Also compute center of mass deviation
+            let comX = 0, comY = 0, comZ = 0;
+            let totalW = 0;
+            
+            particles.forEach(p => {
+                const pos = p.mesh.position;
+                const dist = pos.distanceTo(p.targetPos);
+                totalDistSq += dist * dist;
+                maxDist = Math.max(maxDist, dist);
+                
+                // Weighted center of mass
+                const w = p.value - 8.5; // Deviation from mean
+                comX += pos.x * w;
+                comY += pos.y * w;
+                comZ += pos.z * w;
+                totalW += Math.abs(w);
+            });
+            
+            // Normalize
+            const avgDist = Math.sqrt(totalDistSq / 16);
+            
+            return {
+                c1: comX / 16,  // X-axis balance
+                c2: comZ / 16,  // Z-axis balance  
+                c3: comY / 16,  // Y-axis (height) balance
+                c4: avgDist     // Overall distance to target
+            };
+        }
+        
+        // Update UI
+        function updateUI(cov) {
+            const ids = ['c1', 'c2', 'c3', 'c4'];
+            const vals = [cov.c1, cov.c2, cov.c3, cov.c4];
+            const maxVal = 3;
+            
+            vals.forEach((v, i) => {
+                const bar = document.getElementById(`${ids[i]}-bar`);
+                const valSpan = document.getElementById(`${ids[i]}-val`);
+                
+                const pct = Math.min(50, Math.abs(v) / maxVal * 50);
+                
+                if (v >= 0) {
+                    bar.style.left = '50%';
+                    bar.style.right = 'auto';
+                    bar.style.width = pct + '%';
+                    bar.style.background = `linear-gradient(90deg, #555, ${Math.abs(v) < 0.1 ? '#4ecdc4' : '#ff6b6b'})`;
+                } else {
+                    bar.style.right = '50%';
+                    bar.style.left = 'auto';
+                    bar.style.width = pct + '%';
+                    bar.style.background = `linear-gradient(90deg, ${Math.abs(v) < 0.1 ? '#4ecdc4' : '#ff6b6b'}, #555)`;
+                }
+                
+                valSpan.textContent = v.toFixed(2);
+                valSpan.style.color = Math.abs(v) < 0.1 ? '#4ecdc4' : '#ff6b6b';
+            });
+            
+            const total = Math.sqrt(vals.reduce((s, v) => s + v*v, 0));
+            const totalEl = document.getElementById('total-val');
+            totalEl.textContent = total.toFixed(3);
+            
+            // Sync percentage (inverse of imbalance)
+            const maxImbalance = 5;
+            const syncPct = Math.max(0, Math.min(100, (1 - total / maxImbalance) * 100));
+            document.getElementById('sync-fill').style.width = syncPct + '%';
+            document.getElementById('sync-pct').textContent = syncPct.toFixed(0) + '%';
+            
+            // Color based on state
+            if (syncPct > 95) {
+                totalEl.style.color = '#4ecdc4';
+            } else if (syncPct > 50) {
+                totalEl.style.color = '#f9ca24';
+            } else {
+                totalEl.style.color = '#ff6b6b';
+            }
+            
+            // Update phase indicator
+            const phaseLabel = document.getElementById('phase-label');
+            const phaseDesc = document.getElementById('phase-description');
+            
+            if (mode === 'chaos') {
+                phaseLabel.textContent = 'CHAOS';
+                phaseLabel.className = 'phase-indicator chaos';
+                phaseDesc.textContent = 'Particles orbit randomly on independent paths. The system is far from balance.';
+            } else if (mode === 'entraining') {
+                if (syncPct > 90) {
+                    phaseLabel.textContent = 'LOCKING...';
+                    phaseLabel.className = 'phase-indicator locked pulsing';
+                    phaseDesc.textContent = 'Almost there! Particles are phase-locking into the balanced configuration.';
+                } else if (syncPct > 50) {
+                    phaseLabel.textContent = 'ENTRAINING';
+                    phaseLabel.className = 'phase-indicator entraining';
+                    phaseDesc.textContent = 'The entrainment force is aligning the orbits. Watch the covariances approach zero.';
+                } else {
+                    phaseLabel.textContent = 'SEEDING';
+                    phaseLabel.className = 'phase-indicator entraining';
+                    phaseDesc.textContent = 'A small force begins to nudge particles toward balance. Order emerges slowly...';
+                }
+            }
+            
+            if (syncPct > 98 && mode === 'entraining') {
+                mode = 'locked';
+                phaseLabel.textContent = 'SYNCHRONIZED';
+                phaseLabel.className = 'phase-indicator locked';
+                phaseDesc.textContent = 'Perfect balance achieved! All covariances at zero. The system has found its quantum state.';
+            }
+            
+            // History
+            history.push(total);
+            if (history.length > maxHistory) history.shift();
+            drawHistory();
+            
+            return total;
+        }
+        
+        // Draw history graph
+        function drawHistory() {
+            const canvas = document.getElementById('history-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, w, h);
+            
+            if (history.length < 2) return;
+            
+            const maxVal = Math.max(5, ...history);
+            
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            
+            history.forEach((v, i) => {
+                const x = (i / maxHistory) * w;
+                const y = h - (v / maxVal) * h;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            
+            ctx.stroke();
+            
+            // Zero line
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(w, h);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const dt = 0.016 * speedMultiplier;
+            
+            particles.forEach(p => {
+                // Update angle (orbital motion)
+                p.angle += p.speed * dt;
+                
+                if (mode === 'entraining' || mode === 'locked') {
+                    // Entrainment: pull position toward target 3D gem position
+                    const lerpFactor = entrainmentForce * dt * 0.8;
+                    
+                    // Current orbital position
+                    const orbX = p.radius * Math.cos(p.angle);
+                    const orbY = p.radius * Math.sin(p.angle);
+                    let pos = new THREE.Vector3(orbX, orbY, 0);
+                    const q = new THREE.Quaternion().setFromUnitVectors(
+                        new THREE.Vector3(0, 0, 1), p.axis
+                    );
+                    pos.applyQuaternion(q);
+                    
+                    // Blend toward target gem position
+                    pos.lerp(p.targetPos, lerpFactor);
+                    
+                    // Also gradually align orbital axis
+                    p.axis.lerp(p.targetAxis, lerpFactor * 0.3);
+                    p.axis.normalize();
+                    
+                    // Update orbit ring opacity (fade out as we lock)
+                    const distToTarget = pos.distanceTo(p.targetPos);
+                    p.orbit.material.opacity = Math.min(0.15, distToTarget * 0.05);
+                    
+                    p.mesh.position.copy(pos);
+                } else {
+                    // Pure chaos: orbital motion only
+                    const x = p.radius * Math.cos(p.angle);
+                    const y = p.radius * Math.sin(p.angle);
+                    const pos = new THREE.Vector3(x, y, 0);
+                    
+                    const q = new THREE.Quaternion().setFromUnitVectors(
+                        new THREE.Vector3(0, 0, 1), p.axis
+                    );
+                    pos.applyQuaternion(q);
+                    
+                    p.mesh.position.copy(pos);
+                }
+            });
+            
+            const cov = computeCovariances();
+            updateUI(cov);
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // Controls
+        document.getElementById('chaosBtn').addEventListener('click', () => {
+            mode = 'chaos';
+            document.getElementById('chaosBtn').classList.add('active');
+            document.getElementById('entrainBtn').classList.remove('active');
+            document.getElementById('entrainBtn').classList.remove('warning');
+            
+            // Randomize orbits
+            particles.forEach(p => {
+                p.axis = new THREE.Vector3(
+                    Math.random() - 0.5,
+                    Math.random() - 0.5,
+                    Math.random() - 0.5
+                ).normalize();
+                p.angle = Math.random() * Math.PI * 2;
+                
+                const q = new THREE.Quaternion().setFromUnitVectors(
+                    new THREE.Vector3(0, 0, 1), p.axis
+                );
+                p.orbit.quaternion.copy(q);
+            });
+            
+            history.length = 0;
+        });
+        
+        document.getElementById('entrainBtn').addEventListener('click', () => {
+            mode = 'entraining';
+            document.getElementById('entrainBtn').classList.add('warning');
+            document.getElementById('chaosBtn').classList.remove('active');
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            mode = 'chaos';
+            initParticles();
+            history.length = 0;
+            document.getElementById('chaosBtn').classList.add('active');
+            document.getElementById('entrainBtn').classList.remove('active');
+            document.getElementById('entrainBtn').classList.remove('warning');
+        });
+        
+        document.getElementById('forceSlider').addEventListener('input', (e) => {
+            entrainmentForce = e.target.value / 100;
+            document.getElementById('forceVal').textContent = e.target.value + '%';
+        });
+        
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            speedMultiplier = e.target.value / 50;
+        });
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        animate();
+    </script>
+</body>
+</html>
+

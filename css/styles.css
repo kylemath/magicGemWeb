@@ -7,6 +7,7 @@
     --primary: #6366f1;
     --primary-dark: #4f46e5;
     --primary-light: #818cf8;
+    --accent-primary: #6366f1;
     --secondary: #10b981;
     --accent: #f59e0b;
     --danger: #ef4444;
@@ -95,6 +96,32 @@ a {
 a:hover {
     color: var(--primary);
     text-decoration: underline;
+}
+
+/* Blockquote */
+blockquote {
+    border-left: 3px solid var(--primary);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    color: var(--text-secondary);
+    font-style: italic;
+    background: rgba(99, 102, 241, 0.05);
+    padding: 1rem 1rem 1rem 1.5rem;
+    border-radius: var(--radius-md);
+}
+
+blockquote strong {
+    color: var(--primary-light);
+}
+
+/* Code */
+code {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    background: var(--bg-card);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--primary-light);
 }
 
 /* ========================================

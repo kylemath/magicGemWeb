@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Squares as Electron Orbital Configurations</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        #viewer {
+            flex: 2;
+            position: relative;
+        }
+        #sidebar {
+            flex: 1;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid #333;
+            max-width: 400px;
+        }
+        h1 { font-size: 16px; color: #4ecdc4; margin-bottom: 15px; }
+        h2 { font-size: 14px; color: #f9ca24; margin: 20px 0 10px; }
+        h3 { font-size: 12px; color: #888; margin: 15px 0 8px; }
+        p { font-size: 11px; line-height: 1.6; color: #aaa; margin-bottom: 10px; }
+        
+        .shell-diagram {
+            background: #111;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .shell-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        .shell-label {
+            width: 80px;
+            color: #4ecdc4;
+        }
+        .shell-particles {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .particle-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .orbital-notation {
+            font-family: monospace;
+            font-size: 14px;
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .orbital-notation sup { font-size: 10px; }
+        
+        .comparison-table {
+            width: 100%;
+            font-size: 10px;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 8px;
+            border: 1px solid #333;
+            text-align: left;
+        }
+        .comparison-table th { background: #1a1a2e; color: #4ecdc4; }
+        .comparison-table tr:nth-child(even) { background: #111; }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        #controls button {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+            font-family: inherit;
+            font-size: 11px;
+        }
+        #controls button:hover { background: #444; }
+        #controls button.active { background: #4ecdc4; color: #000; }
+        
+        .highlight { color: #ff6b6b; }
+        .good { color: #4ecdc4; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="viewer">
+            <div id="controls">
+                <button id="rotateBtn" class="active">Auto Rotate</button>
+                <button id="showGemBtn">Show Magic Gem</button>
+                <button id="showOrbitsBtn">Show Orbits</button>
+            </div>
+        </div>
+        <div id="sidebar">
+            <h1>Magic Square ↔ Electron Orbital Mapping</h1>
+            
+            <p>
+                The 16 cells of a magic square can be mapped to electron configurations.
+                Each cell's <span class="highlight">value determines its shell distance</span>,
+                while its <span class="highlight">grid position determines its angular orientation</span>.
+            </p>
+            
+            <h2>Shell Configuration (by distance)</h2>
+            <div class="shell-diagram" id="shell-diagram">
+                <!-- Filled by JS -->
+            </div>
+            
+            <h2>Orbital Notation (Atomic Analogy)</h2>
+            <div class="orbital-notation" id="orbital-notation">
+                <!-- Filled by JS -->
+            </div>
+            
+            <h2>Mapping to Real Orbitals</h2>
+            <table class="comparison-table">
+                <tr>
+                    <th>Magic Square</th>
+                    <th>Atomic Analog</th>
+                </tr>
+                <tr>
+                    <td>Shell distance = value</td>
+                    <td>Principal quantum number (n)</td>
+                </tr>
+                <tr>
+                    <td>Grid position angle</td>
+                    <td>Magnetic quantum number (m<sub>l</sub>)</td>
+                </tr>
+                <tr>
+                    <td>Row/Col index</td>
+                    <td>Angular momentum (l)</td>
+                </tr>
+                <tr>
+                    <td>Covariance = 0</td>
+                    <td>Energy eigenstate</td>
+                </tr>
+                <tr>
+                    <td>880 magic squares</td>
+                    <td>Allowed electron configurations</td>
+                </tr>
+            </table>
+            
+            <h2>Balance as Quantum Constraint</h2>
+            <p>
+                Just as electrons fill orbitals following the <strong>Aufbau principle</strong> 
+                and <strong>Pauli exclusion</strong>, magic square values fill grid positions 
+                following the <strong>covariance constraints</strong>.
+            </p>
+            <p>
+                The 6 covariance conditions act like quantum rules:
+            </p>
+            <ul style="font-size: 11px; color: #aaa; padding-left: 20px; margin-bottom: 15px;">
+                <li>c₁, c₂ = 0 → Center of mass at nucleus (like s-orbital symmetry)</li>
+                <li>c₃, c₄ = 0 → Moment balanced (like d-orbital shapes)</li>
+                <li>c₅, c₆ = 0 → Diagonal slices balanced (like nodal planes)</li>
+            </ul>
+            
+            <h2>Shell Occupancy Pattern</h2>
+            <div id="occupancy-pattern">
+                <!-- Filled by JS -->
+            </div>
+            
+            <h3>Comparison with Noble Gas Configurations</h3>
+            <p style="font-size: 10px;">
+                <strong>Helium (2):</strong> 1s² → 2 particles in innermost shell<br>
+                <strong>Neon (10):</strong> 1s² 2s² 2p⁶ → filled shells<br>
+                <strong>Argon (18):</strong> [Ne] 3s² 3p⁶<br><br>
+                <strong>Magic Square (16):</strong> A unique "element" with 16 particles 
+                distributed across shells 1-16, constrained to perfect balance.
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // Dürer's magic square
+        const DURER = [
+            [16, 3, 2, 13],
+            [5, 10, 11, 8],
+            [9, 6, 7, 12],
+            [4, 15, 14, 1]
+        ];
+        
+        // Scene setup
+        const container = document.getElementById('viewer');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+        
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+        camera.position.set(20, 15, 20);
+        
+        // Nucleus
+        const nucleus = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff4444 })
+        );
+        scene.add(nucleus);
+        nucleus.add(new THREE.PointLight(0xff4444, 2, 10));
+        
+        // Color by value (shell)
+        function getColor(value) {
+            const t = (value - 1) / 15;
+            return new THREE.Color().setHSL(0.7 - t * 0.5, 0.9, 0.5 + t * 0.2);
+        }
+        
+        // Group particles by distance from grid center
+        function analyzeShells() {
+            const center = 1.5;
+            const shells = {};
+            
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const value = DURER[i][j];
+                    const dist = Math.sqrt((i - center)**2 + (j - center)**2);
+                    const shellKey = dist.toFixed(2);
+                    
+                    if (!shells[shellKey]) {
+                        shells[shellKey] = { distance: dist, particles: [] };
+                    }
+                    shells[shellKey].particles.push({
+                        value: value,
+                        row: i,
+                        col: j,
+                        angle: Math.atan2(i - center, j - center)
+                    });
+                }
+            }
+            
+            return Object.values(shells).sort((a, b) => a.distance - b.distance);
+        }
+        
+        // Create 3D visualization - Magic Gem style
+        const particles = [];
+        const orbits = [];
+        let showGem = true;
+        let showOrbitsFlag = true;
+        
+        function createVisualization() {
+            // Clear existing
+            particles.forEach(p => scene.remove(p));
+            orbits.forEach(o => scene.remove(o));
+            particles.length = 0;
+            orbits.length = 0;
+            
+            const center = 1.5;
+            const meanZ = 8.5;
+            const scale = 1.5; // Scale factor for better visibility
+            
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const value = DURER[i][j];
+                    
+                    // 3D position: (x, y, z) where z is value
+                    const x = (j - center) * scale;
+                    const y = (i - center) * scale;
+                    const z = (value - meanZ) * 0.5; // Scale z for visual
+                    
+                    // Particle
+                    const geometry = new THREE.SphereGeometry(0.4, 16, 16);
+                    const material = new THREE.MeshBasicMaterial({
+                        color: getColor(value),
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(x, z, y); // Note: y/z swapped for better view
+                    
+                    // Glow
+                    mesh.add(new THREE.PointLight(getColor(value), 0.3, 2));
+                    
+                    // Label
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 64; canvas.height = 64;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 32px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(value.toString(), 32, 32);
+                    const texture = new THREE.CanvasTexture(canvas);
+                    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, opacity: 0.9 }));
+                    sprite.scale.set(1, 1, 1);
+                    mesh.add(sprite);
+                    
+                    scene.add(mesh);
+                    particles.push(mesh);
+                    
+                    // Draw connection to show gem structure
+                    if (showGem) {
+                        // Vertical line to base
+                        const lineGeo = new THREE.BufferGeometry().setFromPoints([
+                            new THREE.Vector3(x, z, y),
+                            new THREE.Vector3(x, -5, y)
+                        ]);
+                        const lineMat = new THREE.LineBasicMaterial({ 
+                            color: getColor(value), 
+                            transparent: true, 
+                            opacity: 0.3 
+                        });
+                        const line = new THREE.Line(lineGeo, lineMat);
+                        scene.add(line);
+                        orbits.push(line);
+                    }
+                }
+            }
+            
+            // Draw shell circles (orbital paths) if enabled
+            if (showOrbitsFlag) {
+                const shells = analyzeShells();
+                shells.forEach(shell => {
+                    const r = shell.distance * scale;
+                    const geometry = new THREE.RingGeometry(r - 0.02, r + 0.02, 64);
+                    const material = new THREE.MeshBasicMaterial({
+                        color: 0x4ecdc4,
+                        transparent: true,
+                        opacity: 0.2,
+                        side: THREE.DoubleSide
+                    });
+                    const ring = new THREE.Mesh(geometry, material);
+                    ring.rotation.x = Math.PI / 2;
+                    ring.position.y = -5; // At base
+                    scene.add(ring);
+                    orbits.push(ring);
+                });
+            }
+            
+            // Base grid
+            const gridHelper = new THREE.GridHelper(10, 4, 0x333333, 0x222222);
+            gridHelper.position.y = -5;
+            scene.add(gridHelper);
+            orbits.push(gridHelper);
+        }
+        
+        createVisualization();
+        
+        // Generate shell diagram HTML
+        function updateShellDiagram() {
+            const shells = analyzeShells();
+            let html = '';
+            
+            shells.forEach((shell, idx) => {
+                const shellName = ['Inner', 'Near', 'Mid', 'Outer'][idx] || `Shell ${idx + 1}`;
+                html += `<div class="shell-row">
+                    <span class="shell-label">${shellName} (d=${shell.distance.toFixed(2)})</span>
+                    <div class="shell-particles">`;
+                
+                shell.particles.forEach(p => {
+                    const hue = ((p.value - 1) / 15) * 0.5 + 0.2;
+                    const color = `hsl(${(0.7 - hue * 0.5) * 360}, 80%, 50%)`;
+                    html += `<div class="particle-dot" style="background: ${color}">${p.value}</div>`;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            document.getElementById('shell-diagram').innerHTML = html;
+        }
+        
+        // Generate orbital notation
+        function updateOrbitalNotation() {
+            const shells = analyzeShells();
+            let notation = '';
+            const shellNames = ['s', 'p', 'd', 'f'];
+            
+            shells.forEach((shell, idx) => {
+                const n = idx + 1;
+                const l = shellNames[Math.min(idx, 3)];
+                const count = shell.particles.length;
+                notation += `${n}${l}<sup>${count}</sup> `;
+            });
+            
+            document.getElementById('orbital-notation').innerHTML = notation;
+        }
+        
+        // Generate occupancy pattern
+        function updateOccupancyPattern() {
+            const shells = analyzeShells();
+            let html = '<div style="font-size: 10px; font-family: monospace;">';
+            
+            // Visual representation like electron filling diagram
+            const maxOccupancy = [2, 8, 18, 32]; // Like real atomic shells
+            
+            shells.forEach((shell, idx) => {
+                const count = shell.particles.length;
+                const capacity = 4; // Our grid has 4 positions at each distance level
+                
+                html += `<div style="margin-bottom: 5px;">
+                    <span style="color: #4ecdc4; width: 60px; display: inline-block;">Shell ${idx + 1}:</span>`;
+                
+                for (let i = 0; i < capacity; i++) {
+                    if (i < count) {
+                        const p = shell.particles[i];
+                        html += `<span style="color: #ff6b6b; margin-right: 3px;">↑${p.value}</span>`;
+                    } else {
+                        html += `<span style="color: #333; margin-right: 3px;">__</span>`;
+                    }
+                }
+                
+                html += `</div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('occupancy-pattern').innerHTML = html;
+        }
+        
+        updateShellDiagram();
+        updateOrbitalNotation();
+        updateOccupancyPattern();
+        
+        // Controls
+        document.getElementById('rotateBtn').addEventListener('click', function() {
+            controls.autoRotate = !controls.autoRotate;
+            this.classList.toggle('active');
+        });
+        
+        document.getElementById('showGemBtn').addEventListener('click', function() {
+            showGem = !showGem;
+            this.classList.toggle('active');
+            createVisualization();
+        });
+        
+        document.getElementById('showOrbitsBtn').addEventListener('click', function() {
+            showOrbitsFlag = !showOrbitsFlag;
+            this.classList.toggle('active');
+            createVisualization();
+        });
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    </script>
+</body>
+</html>
+

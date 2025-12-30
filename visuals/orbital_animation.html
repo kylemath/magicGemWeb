@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Square Orbital System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            max-width: 350px;
+        }
+        #info h1 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+        #info p {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #aaa;
+        }
+        #info .highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        #controls label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        #controls input[type="range"] {
+            width: 150px;
+            margin-left: 10px;
+        }
+        #controls button {
+            background: #4ecdc4;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-family: inherit;
+        }
+        #controls button:hover {
+            background: #3dbdb5;
+        }
+        #legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        #legend h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>Magic Square as Orbital System</h1>
+        <p>
+            Each particle represents a cell from Dürer's magic square.
+            <br><br>
+            <span class="highlight">Distance from center = Cell value</span>
+            <br><br>
+            Value 1 orbits closest (1 unit), value 16 orbits farthest (16 units).
+            All particles have equal mass, spinning on random orbital planes.
+            <br><br>
+            <em>Like electrons in shells, but the "shell number" is the value itself.</em>
+        </p>
+    </div>
+    
+    <div id="controls">
+        <label>
+            Rotation Speed: 
+            <input type="range" id="speedSlider" min="0" max="2" step="0.1" value="0.5">
+        </label>
+        <label>
+            Camera Distance: 
+            <input type="range" id="cameraSlider" min="20" max="80" step="1" value="40">
+        </label>
+        <br>
+        <button id="resetBtn">Reset View</button>
+        <button id="pauseBtn">Pause</button>
+    </div>
+    
+    <div id="legend">
+        <h3>Dürer's Square</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; font-size: 10px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">16</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">3</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">2</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">13</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">5</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">10</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">11</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">8</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">9</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">6</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">7</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">12</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">4</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">15</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">14</div>
+            <div style="background: rgba(255,255,255,0.1); padding: 4px;">1</div>
+        </div>
+        <p style="font-size: 10px; margin-top: 10px; color: #888;">
+            Sum of each row/col/diag = 34
+        </p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // Dürer's magic square
+        const DURER = [
+            [16, 3, 2, 13],
+            [5, 10, 11, 8],
+            [9, 6, 7, 12],
+            [4, 15, 14, 1]
+        ];
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+        
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        
+        // Camera position
+        camera.position.set(30, 20, 30);
+        controls.update();
+        
+        // Central nucleus
+        const nucleusGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const nucleusMaterial = new THREE.MeshBasicMaterial({ color: 0xff4444 });
+        const nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
+        scene.add(nucleus);
+        
+        // Add glow to nucleus
+        const nucleusGlow = new THREE.PointLight(0xff4444, 2, 10);
+        nucleus.add(nucleusGlow);
+        
+        // Color gradient from inner (blue) to outer (red)
+        function getColor(value) {
+            // Value 1-16, interpolate from blue to red
+            const t = (value - 1) / 15;
+            const r = Math.floor(100 + t * 155);
+            const g = Math.floor(200 - t * 150);
+            const b = Math.floor(255 - t * 200);
+            return new THREE.Color(`rgb(${r}, ${g}, ${b})`);
+        }
+        
+        // Create particles for each magic square value
+        const particles = [];
+        const orbits = [];
+        
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                const value = DURER[i][j];
+                const radius = value; // Distance = value
+                
+                // Random orbital plane (random axis of rotation)
+                const axis = new THREE.Vector3(
+                    Math.random() - 0.5,
+                    Math.random() - 0.5,
+                    Math.random() - 0.5
+                ).normalize();
+                
+                // Random starting angle
+                const startAngle = Math.random() * Math.PI * 2;
+                
+                // Random orbital speed (faster for inner orbits, like Kepler's laws)
+                const speed = 0.5 / Math.sqrt(value);
+                
+                // Create particle (half unit mass = 0.5 radius sphere)
+                const geometry = new THREE.SphereGeometry(0.5, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: getColor(value),
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const particle = new THREE.Mesh(geometry, material);
+                
+                // Add slight glow
+                const glow = new THREE.PointLight(getColor(value), 0.5, 3);
+                particle.add(glow);
+                
+                // Create orbit ring (faint)
+                const orbitGeometry = new THREE.RingGeometry(radius - 0.05, radius + 0.05, 64);
+                const orbitMaterial = new THREE.MeshBasicMaterial({ 
+                    color: getColor(value),
+                    transparent: true,
+                    opacity: 0.15,
+                    side: THREE.DoubleSide
+                });
+                const orbitRing = new THREE.Mesh(orbitGeometry, orbitMaterial);
+                
+                // Rotate orbit ring to match orbital plane
+                const quaternion = new THREE.Quaternion();
+                quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), axis);
+                orbitRing.quaternion.copy(quaternion);
+                
+                scene.add(particle);
+                scene.add(orbitRing);
+                
+                // Create label
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 40px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(value.toString(), 32, 32);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ 
+                    map: texture,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.scale.set(1.5, 1.5, 1);
+                particle.add(sprite);
+                
+                particles.push({
+                    mesh: particle,
+                    orbit: orbitRing,
+                    radius: radius,
+                    axis: axis,
+                    angle: startAngle,
+                    speed: speed,
+                    value: value,
+                    row: i,
+                    col: j
+                });
+            }
+        }
+        
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+        
+        // Add reference grid
+        const gridHelper = new THREE.GridHelper(40, 40, 0x222222, 0x111111);
+        gridHelper.position.y = -2;
+        scene.add(gridHelper);
+        
+        // Animation state
+        let speedMultiplier = 0.5;
+        let isPaused = false;
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (!isPaused) {
+                // Update particle positions
+                particles.forEach(p => {
+                    p.angle += p.speed * speedMultiplier * 0.02;
+                    
+                    // Calculate position on orbital plane
+                    // Start with position in XY plane, then rotate by quaternion
+                    const x = p.radius * Math.cos(p.angle);
+                    const y = p.radius * Math.sin(p.angle);
+                    
+                    // Create position vector in orbital plane
+                    const pos = new THREE.Vector3(x, y, 0);
+                    
+                    // Rotate to align with orbital axis
+                    const quaternion = new THREE.Quaternion();
+                    quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), p.axis);
+                    pos.applyQuaternion(quaternion);
+                    
+                    p.mesh.position.copy(pos);
+                });
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // Event listeners
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            speedMultiplier = parseFloat(e.target.value);
+        });
+        
+        document.getElementById('cameraSlider').addEventListener('input', (e) => {
+            const dist = parseFloat(e.target.value);
+            const dir = camera.position.clone().normalize();
+            camera.position.copy(dir.multiplyScalar(dist));
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            camera.position.set(30, 20, 30);
+            controls.reset();
+        });
+        
+        document.getElementById('pauseBtn').addEventListener('click', (e) => {
+            isPaused = !isPaused;
+            e.target.textContent = isPaused ? 'Play' : 'Pause';
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
+

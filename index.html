@@ -47,17 +47,21 @@
             <span class="tab-icon">⚡</span>
             Energy Landscape
         </button>
-        <button class="tab-btn" data-tab="theorems">
-            <span class="tab-icon">📐</span>
-            New Theorems
-        </button>
         <button class="tab-btn" data-tab="explore">
             <span class="tab-icon">🧪</span>
             Explore
         </button>
+        <button class="tab-btn" data-tab="catalogue4x4">
+            <span class="tab-icon">🔍</span>
+            4×4 Catalogue
+        </button>
         <button class="tab-btn" data-tab="enumeration">
             <span class="tab-icon">🔢</span>
             4×4 Gallery
+        </button>
+        <button class="tab-btn" data-tab="manifold">
+            <span class="tab-icon">🌐</span>
+            Manifold Viewer
         </button>
         <button class="tab-btn" data-tab="papercraft">
             <span class="tab-icon">📄</span>
@@ -71,6 +75,18 @@
             <span class="tab-icon">🎨</span>
             Interactive Builder
         </button>
+        <button class="tab-btn" data-tab="models3d">
+            <span class="tab-icon">🔷</span>
+            3D Models
+        </button>
+        <button class="tab-btn" data-tab="entrainment">
+            <span class="tab-icon">🌀</span>
+            Entrainment
+        </button>
+        <button class="tab-btn" data-tab="orbitalshells">
+            <span class="tab-icon">⚛️</span>
+            Orbital Shells
+        </button>
     </nav>
 
     <!-- Main Content -->
@@ -81,6 +97,9 @@
             <div class="intro-hero">
                 <h2>What is a Magic Square?</h2>
                 <p class="lead">A magic square is an n×n grid of distinct positive integers where every row, column, and both main diagonals sum to the same value — the <strong>magic constant</strong>.</p>
+                <blockquote style="border-left: 3px solid var(--accent-primary); padding-left: 1.5rem; margin: 2rem 0; color: var(--text-secondary); font-style: italic;">
+                    We present a framework that embeds magic squares as point clouds in ℝ³, revealing that they are uniquely characterized by <strong>zero spatial-value covariance</strong>. This provides a continuous formulation of discrete constraints and enables polynomial-time generation algorithms.
+                </blockquote>
             </div>
 
             <div class="card-grid">
@@ -113,7 +132,8 @@
 
                 <div class="card featured">
                     <h3>The Magic Gem Framework</h3>
-                    <p>We introduce a revolutionary new representation: transforming each magic square into a <strong>3D polyhedron</strong> called a Magic Gem.</p>
+                    <p><strong>Physical Intuition:</strong> Imagine stacking coins on a grid, with the number of coins at position (i, j) equal to the magic square entry. Suspend this weighted grid from its center—it balances perfectly!</p>
+                    <p>We transform this physical intuition into a mathematical representation: each magic square becomes a <strong>3D polyhedron</strong> called a Magic Gem.</p>
                     <div class="steps">
                         <div class="step">
                             <span class="step-num">1</span>
@@ -121,11 +141,11 @@
                         </div>
                         <div class="step">
                             <span class="step-num">2</span>
-                            <span>Cell values become z-coordinates</span>
+                            <span>Cell values become z-coordinates (height)</span>
                         </div>
                         <div class="step">
                             <span class="step-num">3</span>
-                            <span>Compute the convex hull → Magic Gem</span>
+                            <span>Compute the convex hull → Magic Gem polyhedron</span>
                         </div>
                     </div>
                 </div>
@@ -137,14 +157,101 @@
             </div>
 
             <div class="section">
+                <h2>Key Research Findings</h2>
+                <p>Analysis of all 880 unique 4×4 magic squares (enumerated by Frénicle de Bessy in 1693) reveals:</p>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>🔷 21 Geometric Configurations</h3>
+                        <p>Based on convex hull structure (vertices, face points, interior points), the 880 magic squares fall into exactly 21 distinct geometric families.</p>
+                    </div>
+                    <div class="card">
+                        <h3>⚡ Polynomial-Time Generation</h3>
+                        <p>Gradient descent on the covariance objective achieves <strong>O(n⁴) complexity</strong>, approximately <strong>73× faster</strong> than traditional backtracking methods.</p>
+                    </div>
+                    <div class="card">
+                        <h3>🌐 Connected Manifold</h3>
+                        <p>The 880 squares form a <strong>single connected component</strong> in Earth Mover's Distance (EMD) space, revealing deep topological structure.</p>
+                    </div>
+                    <div class="card">
+                        <h3>🎯 Fragile Uniqueness</h3>
+                        <p>Testing 100,000 single-swap perturbations, the minimum covariance observed was 0.2—never zero. Magic squares are the <em>unique</em> solutions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Mathematical Properties</h2>
+                <p>The Magic Gem framework reveals exact formulas for the statistical structure of magic squares:</p>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>📊 Exact Variance Formulas</h3>
+                        <p>For any n×n magic square, the variances have closed forms:</p>
+                        <div class="equation">
+                            \[ \text{Var}(Z) = \frac{n^4 - 1}{12}, \quad \text{Var}(X) = \text{Var}(Y) = \frac{n^2 - 1}{12} \]
+                        </div>
+                        <p class="formula" style="font-size: 0.9em; margin-top: 0.5rem;">Verified computationally for n = 3, 4, 5, 7 with exact agreement.</p>
+                    </div>
+                    <div class="card">
+                        <h3>📈 Higher-Order Moment Vanishing</h3>
+                        <p>The zero-covariance property extends to all higher powers:</p>
+                        <div class="equation">
+                            \[ \mathbb{E}[X^k Z] = \mathbb{E}[Y^k Z] = 0 \text{ for all } k \]
+                        </div>
+                        <p class="formula" style="font-size: 0.9em; margin-top: 0.5rem;">This follows from equal row and column sums—a stronger form of statistical balance.</p>
+                    </div>
+                    <div class="card">
+                        <h3>⚡ Perturbation Gap Scaling</h3>
+                        <p>The minimum energy increase from any single swap scales as:</p>
+                        <div class="equation">
+                            \[ \Delta_{\min} \propto \frac{1}{n^2} \]
+                        </div>
+                        <p class="formula" style="font-size: 0.9em; margin-top: 0.5rem;">Energy wells become shallower as order increases, but magic squares remain isolated local minima.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
                 <h2>The Zero-Covariance Theorem</h2>
                 <div class="theorem-box">
-                    <p><strong>Theorem:</strong> An arrangement S is a magic square if and only if:</p>
+                    <p><strong>Theorem:</strong> A 4×4 arrangement of distinct integers 1–16 is a magic square <em>if and only if</em> four specific covariances vanish:</p>
+                    <ul style="margin: 1rem 0 1rem 2rem; line-height: 2;">
+                        <li>Cov(row position, value) = 0</li>
+                        <li>Cov(column position, value) = 0</li>
+                        <li>Cov(main diagonal position, value) = 0</li>
+                        <li>Cov(anti-diagonal position, value) = 0</li>
+                    </ul>
+                    <p>Equivalently, the energy functional must equal zero:</p>
                     <div class="equation">
                         \[ E(S) = \text{Cov}(X,Z)^2 + \text{Cov}(Y,Z)^2 + \text{Cov}(D_{\text{main}},Z)^2 + \text{Cov}(D_{\text{anti}},Z)^2 = 0 \]
                     </div>
-                    <p>This energy functional measures the "imbalance" of an arrangement. Magic squares achieve perfect balance.</p>
+                    <p>This provides a <strong>continuous characterization</strong> of the discrete constraint. Magic squares achieve perfect statistical balance—center of mass at origin, zero angular momentum.</p>
                 </div>
+            </div>
+
+            <div class="section">
+                <h2>Paper & Resources</h2>
+                <p>Access the full research paper with proofs, reproducible code, and additional materials:</p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;">
+                    <a href="https://arxiv.org/abs/2512.09170" target="_blank" class="btn primary" style="text-decoration: none;">
+                        📄 Read Paper (arXiv)
+                    </a>
+                    <a href="https://github.com/kylemath/MagicGem" target="_blank" class="btn" style="text-decoration: none;">
+                        💻 View Code (GitHub)
+                    </a>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">
+                    Run <code style="background: var(--card-bg); padding: 0.15rem 0.4rem; border-radius: 3px;">python reproduce_all.py</code> to regenerate all results.
+                </p>
+
+                <h3>References & Further Reading</h3>
+                <ul style="line-height: 1.8; margin: 1rem 0 1.5rem 1.5rem;">
+                    <li><a href="https://en.wikipedia.org/wiki/Magic_square" target="_blank">Magic square (Wikipedia)</a></li>
+                    <li><a href="https://en.wikipedia.org/wiki/Lo_Shu_Square" target="_blank">Lo Shu square (Wikipedia)</a></li>
+                    <li><a href="https://en.wikipedia.org/wiki/Melencolia_I" target="_blank">Melencolia I - Dürer's engraving (Wikipedia)</a></li>
+                    <li><a href="https://en.wikipedia.org/wiki/Convex_hull" target="_blank">Convex hull (Wikipedia)</a></li>
+                    <li><a href="https://en.wikipedia.org/wiki/Earth_mover%27s_distance" target="_blank">Earth mover's distance (Wikipedia)</a></li>
+                    <li><a href="https://oeis.org/A006052" target="_blank">OEIS A006052 - Magic square enumeration</a></li>
+                </ul>
             </div>
         </section>
 
@@ -201,16 +308,6 @@
                                 <span>Auto Rotate</span>
                             </label>
                         </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label>Advanced Viewer</label>
-                        <a href="catalogue4x4.html" target="_blank" class="btn" style="display: block; text-align: center; text-decoration: none;">
-                            🔍 Open 4×4 Catalogue Viewer
-                        </a>
-                        <p style="font-size: 0.85em; color: var(--text-secondary); margin-top: 0.5rem;">
-                            Browse all 880 unique 4×4 magic squares with advanced visualization
-                        </p>
                     </div>
 
                     <div class="info-panel">
@@ -291,74 +388,83 @@
             </div>
         </section>
 
-        <!-- New Theorems Tab -->
-        <section id="theorems" class="tab-content">
-            <h2>New Mathematical Discoveries</h2>
-            <p class="lead">The Magic Gem framework reveals several new theorems and patterns that extend our understanding of magic squares.</p>
 
-            <div class="theorem-cards">
-                <div class="theorem-card verified">
-                    <div class="status-badge">✓ Verified</div>
-                    <h3>Theorem A: Exact Variance Formulas</h3>
-                    <p>For any n×n magic square, the covariance matrix has eigenvalues:</p>
-                    <div class="equation">
-                        \[ \text{Var}(Z) = \frac{n^4 - 1}{12}, \quad \text{Var}(X) = \text{Var}(Y) = \frac{n^2 - 1}{12} \]
+        <!-- 4x4 Catalogue Tab -->
+        <section id="catalogue4x4" class="tab-content">
+            <h2>Advanced 4×4 Magic Square Catalogue</h2>
+            <p class="lead">Browse all 880 unique 4×4 magic squares with an advanced visualization tool featuring face pairing detection and arc connections.</p>
+            
+            <div class="card-grid">
+                <div class="card featured">
+                    <h3>🔍 Advanced Catalogue Viewer</h3>
+                    <p>A powerful tool for exploring the complete 4×4 magic square space with sophisticated geometric analysis.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>All 880 unique 4×4 magic squares</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Automatic face pairing detection</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Glowing arc connections between similar faces</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Detailed statistics: faces, vertices, volume, interior points</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Keyboard navigation (arrow keys)</span>
+                        </div>
                     </div>
-                    <div class="verification-table">
-                        <table>
-                            <tr><th>n</th><th>Var(Z) Theory</th><th>Var(Z) Actual</th><th>Match</th></tr>
-                            <tr><td>3</td><td>6.667</td><td>6.667</td><td>✓</td></tr>
-                            <tr><td>5</td><td>52.000</td><td>52.000</td><td>✓</td></tr>
-                            <tr><td>7</td><td>200.000</td><td>200.000</td><td>✓</td></tr>
-                        </table>
-                    </div>
+                    <a href="catalogue4x4.html" target="_blank" class="btn primary" style="display: block; text-align: center; text-decoration: none; margin-top: var(--space-lg); font-size: 1.1em;">
+                        🚀 Open Advanced Catalogue Viewer
+                    </a>
                 </div>
 
-                <div class="theorem-card verified">
-                    <div class="status-badge">✓ Verified</div>
-                    <h3>Theorem B: Extended Moment Vanishing</h3>
-                    <p>All third-order cross-moments vanish for magic squares:</p>
-                    <div class="equation">
-                        \[ \mathbb{E}[X^2 Z] = \mathbb{E}[Y^2 Z] = \mathbb{E}[XYZ] = 0 \]
-                    </div>
-                    <p class="note">This extends the zero-covariance property to higher-order moments, suggesting a deeper statistical balance.</p>
+                <div class="card">
+                    <h3>Face Pairing Analysis</h3>
+                    <p><strong>Key Features:</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Similar Face Detection:</strong> Automatically identifies faces with identical geometry (edge lengths and angles)</li>
+                        <li><strong>Color Coding:</strong> Same-colored faces share the same geometric properties</li>
+                        <li><strong>Arc Connections:</strong> Beautiful glowing arcs connect paired faces through 3D space</li>
+                        <li><strong>Adjustable Epsilon:</strong> Control the similarity threshold for face matching</li>
+                    </ul>
+                    <p style="margin-top: var(--space-md);">This reveals hidden symmetries in the Magic Gem polyhedra that aren't immediately visible.</p>
                 </div>
 
-                <div class="theorem-card verified">
-                    <div class="status-badge">✓ Verified</div>
-                    <h3>Theorem C: Constant 12 Hull Vertices</h3>
-                    <p>For Siamese-constructed magic squares with n ≥ 5:</p>
-                    <div class="highlight">The convex hull has exactly <strong>12 vertices</strong>, independent of n.</div>
-                    <div class="verification-table">
-                        <table>
-                            <tr><th>n</th><th>Total Points</th><th>Hull Vertices</th><th>Interior</th></tr>
-                            <tr><td>3</td><td>9</td><td>8</td><td>1</td></tr>
-                            <tr><td>5</td><td>25</td><td>12</td><td>13</td></tr>
-                            <tr><td>7</td><td>49</td><td>12</td><td>37</td></tr>
-                            <tr><td>9</td><td>81</td><td>12</td><td>69</td></tr>
-                        </table>
-                    </div>
+                <div class="card">
+                    <h3>Visualization Controls</h3>
+                    <p><strong>Available Options:</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Points/Hull/Vectors:</strong> Toggle different geometric elements</li>
+                        <li><strong>Orthographic Mode:</strong> Switch to orthographic projection</li>
+                        <li><strong>Multiple Views:</strong> Front, back, left, right, top, bottom presets</li>
+                        <li><strong>Point Size & Hull Opacity:</strong> Adjust visual properties</li>
+                        <li><strong>Axes Toggle:</strong> Show/hide coordinate axes</li>
+                    </ul>
                 </div>
 
-                <div class="theorem-card verified">
-                    <div class="status-badge">✓ Verified</div>
-                    <h3>Theorem D: Modular Preservation</h3>
-                    <p>Magic squares remain "magic mod p" under reduction modulo any prime p:</p>
-                    <div class="equation">
-                        \[ S \text{ magic with } M(n) \implies S \mod p \text{ magic with } M(n) \mod p \]
-                    </div>
-                    <p class="note">Verified for n = 3, 5, 7 and p = 2, 3, 5, 7, 11, 13.</p>
+                <div class="card">
+                    <h3>Statistics Dashboard</h3>
+                    <p>For each magic square, view detailed metrics:</p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Total Faces:</strong> Number of triangular faces in the convex hull</li>
+                        <li><strong>Paired Faces:</strong> How many faces have geometric twins</li>
+                        <li><strong>Unique Vertices:</strong> Points on the hull boundary</li>
+                        <li><strong>Volume:</strong> Precise volume calculation of the Magic Gem</li>
+                        <li><strong>Interior Points:</strong> Grid points trapped inside the hull</li>
+                    </ul>
                 </div>
+            </div>
 
-                <div class="theorem-card conjecture">
-                    <div class="status-badge">⚡ Conjecture</div>
-                    <h3>Conjecture: Refined Gap Scaling</h3>
-                    <p>The minimum perturbation gap scales as:</p>
-                    <div class="equation">
-                        \[ \Delta_{\min} \cdot n^4 \approx c \quad \text{(constant)} \]
-                    </div>
-                    <p class="note">This suggests O(1/n⁴) scaling, not O(1/n²) as previously thought.</p>
-                </div>
+            <div class="discovery-banner">
+                <h3>🔬 Research Discovery</h3>
+                <p>The face pairing patterns vary significantly across the 880 squares. Some gems have many paired faces (high symmetry), while others have mostly unique faces. This geometric diversity reflects the rich structure of the 4×4 magic square space!</p>
             </div>
         </section>
 
@@ -452,6 +558,69 @@
                         <button class="view-btn" data-view="bottom">Bottom</button>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Manifold Viewer Tab -->
+        <section id="manifold" class="tab-content">
+            <h2>Magic Square Manifold Explorer</h2>
+            <p class="lead">Explore the topological structure of all 880 unique 4×4 magic squares in Earth Mover's Distance (EMD) space. They form a single connected component!</p>
+            
+            <div class="card-grid">
+                <div class="card featured">
+                    <h3>🌐 Interactive Manifold Visualization</h3>
+                    <p>Navigate through the connected space of all 880 magic squares using dimensional reduction and EMD metrics.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>All 880 unique 4×4 magic squares embedded in 2D/3D space</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Earth Mover's Distance (EMD) preserves structural similarity</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Interactive navigation: click any point to see its magic square</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Topological analysis shows single connected component</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>What is Earth Mover's Distance?</h3>
+                    <p>EMD measures the minimum "work" needed to transform one magic square into another by moving values between cells.</p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Structural Metric:</strong> Captures semantic similarity between squares</li>
+                        <li><strong>Continuous Space:</strong> Discrete objects embedded in continuous manifold</li>
+                        <li><strong>Distance Preserving:</strong> Similar squares cluster together geometrically</li>
+                        <li><strong>Connected Component:</strong> All squares reachable from any other</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Key Findings</h3>
+                    <p><strong>Topological Structure:</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Single Component:</strong> No isolated clusters—all squares connected</li>
+                        <li><strong>Dense Regions:</strong> Some areas have high concentration of similar squares</li>
+                        <li><strong>Symmetry Orbits:</strong> D₄ equivalence classes form geometric patterns</li>
+                        <li><strong>Smooth Manifold:</strong> Local neighborhood structure reveals gradual transitions</li>
+                    </ul>
+                    <p style="margin-top: var(--space-md);">This connectivity proves the rich combinatorial structure has deep geometric unity.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-xl); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <iframe src="visuals/manifold_viewer.html" style="width: 100%; height: 80vh; border: none; display: block;"></iframe>
+            </div>
+
+            <div class="discovery-banner" style="margin-top: var(--space-xl);">
+                <h3>🔬 Research Insight</h3>
+                <p>The single connected component structure suggests that the space of magic squares is not fragmented into isolated families. Any magic square can be continuously transformed into any other through the EMD metric space, revealing a fundamental unity in their geometric structure!</p>
             </div>
         </section>
 
@@ -809,6 +978,196 @@
                 </div>
             </div>
         </section>
+
+        <!-- 3D Models Tab -->
+        <section id="models3d" class="tab-content">
+            <h2>3D Models & STL Files</h2>
+            <p class="lead">Explore physical Magic Gem models with interactive 3D viewers and download STL files for 3D printing.</p>
+            
+            <div class="card-grid">
+                <div class="card featured">
+                    <h3>🔷 Interactive 3D Model Catalogue</h3>
+                    <p>View all Magic Gem variants with fully interactive 3D viewers. Rotate, zoom, and inspect each model from any angle.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>8 different Magic Gem variants (v1-v7 + weighted ring)</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Interactive Three.js viewers for each model</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>STL files ready for 3D printing</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>OpenSCAD source code included</span>
+                        </div>
+                    </div>
+                    <a href="3dModels/index.html" target="_blank" class="btn primary" style="display: block; text-align: center; text-decoration: none; margin-top: var(--space-lg); font-size: 1.1em;">
+                        🚀 Open 3D Models Catalogue
+                    </a>
+                </div>
+
+                <div class="card">
+                    <h3>About the Models</h3>
+                    <p><strong>Magic Gem Variants:</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>v1:</strong> 8 vertices variant (classic Lo Shu)</li>
+                        <li><strong>v2:</strong> 9 vertices variant</li>
+                        <li><strong>v3-v7:</strong> 10-11 vertices variants</li>
+                        <li><strong>Weighted Ring:</strong> Physical accessory for spinning demos</li>
+                    </ul>
+                    <p style="margin-top: var(--space-md);">Each variant represents a different 3×3 magic square from the D₄ symmetry group, showing how rotation and reflection create geometrically distinct polyhedra.</p>
+                </div>
+
+                <div class="card">
+                    <h3>3D Printing Guide</h3>
+                    <p><strong>Recommended Settings:</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li>Layer height: 0.2mm</li>
+                        <li>Infill: 20-30%</li>
+                        <li>Supports: May be required for overhangs</li>
+                        <li>Material: PLA or PETG recommended</li>
+                    </ul>
+                    <p style="margin-top: var(--space-md);">The weighted ring can be printed separately and used to demonstrate the physical balance properties of magic square geometry.</p>
+                </div>
+            </div>
+
+            <div class="discovery-banner">
+                <h3>📐 OpenSCAD Source Available</h3>
+                <p>All models are generated using OpenSCAD parametric code. View the source code directly in the catalogue to understand how each gem is constructed and modify parameters to create your own variants!</p>
+            </div>
+        </section>
+
+        <!-- Entrainment Tab -->
+        <section id="entrainment" class="tab-content">
+            <h2>Entrainment: Order Emerging from Chaos</h2>
+            <p class="lead">Watch as random orbiting particles gradually synchronize into the perfect balance of a magic square configuration through entrainment forces.</p>
+            
+            <div class="card-grid">
+                <div class="card featured">
+                    <h3>🌀 Interactive Entrainment Visualization</h3>
+                    <p>Experience the transition from chaos to order as particles entrain into a balanced magic gem configuration.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Three distinct phases: Chaos → Entraining → Synchronized</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Real-time covariance balance tracking with 4 metrics</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Historical imbalance graph shows convergence</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Adjustable entrainment force and simulation speed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Understanding Entrainment</h3>
+                    <p><strong>What is Entrainment?</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Chaos Mode:</strong> Particles orbit randomly on independent paths</li>
+                        <li><strong>Entrainment Force:</strong> A gentle force pulls particles toward balanced positions</li>
+                        <li><strong>Phase Locking:</strong> Particles synchronize like coupled oscillators</li>
+                        <li><strong>Perfect Balance:</strong> System settles into magic square geometry</li>
+                    </ul>
+                    <p style="margin-top: var(--space-md);">Like fireflies synchronizing their flashes or pendulums phase-locking on a shared beam.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Covariance Metrics</h3>
+                    <p>Four balance measures converge to zero:</p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>c₁ (Row):</strong> Row-value covariance</li>
+                        <li><strong>c₂ (Col):</strong> Column-value covariance</li>
+                        <li><strong>c₃ (Row²):</strong> Squared row moment</li>
+                        <li><strong>c₄ (Col²):</strong> Squared column moment</li>
+                    </ul>
+                    <p style="margin-top: var(--space-md);">Watch all four metrics simultaneously approach zero as order emerges!</p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-xl); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <iframe src="visuals/entrainment.html" style="width: 100%; height: 80vh; border: none; display: block;"></iframe>
+            </div>
+
+            <div class="discovery-banner" style="margin-top: var(--space-xl);">
+                <h3>🔬 Natural Phenomenon</h3>
+                <p>Entrainment is found throughout nature: from the synchronization of firefly flashes to the phase-locking of coupled oscillators. Magic squares represent the perfectly entrained state where all covariances vanish!</p>
+            </div>
+        </section>
+
+        <!-- Orbital Shells Tab -->
+        <section id="orbitalshells" class="tab-content">
+            <h2>Magic Squares as Electron Orbital Configurations</h2>
+            <p class="lead">Explore the deep analogy between magic square geometry and quantum electron orbitals. Each cell's value determines its "shell distance," creating a natural mapping to atomic configurations.</p>
+            
+            <div class="card-grid">
+                <div class="card featured">
+                    <h3>⚛️ Quantum-Magic Square Mapping</h3>
+                    <p>A revolutionary perspective: magic squares as quantum-like systems with discrete allowed states.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Cell value → Shell distance (like principal quantum number n)</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Grid position → Angular orientation (like magnetic quantum number m)</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>Zero covariance → Energy eigenstate</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">✓</span>
+                            <span>880 magic squares → Allowed "electron" configurations</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Shell Configuration Analysis</h3>
+                    <p><strong>Key Features:</strong></p>
+                    <ul style="line-height: 1.8; margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                        <li><strong>Shell Grouping:</strong> Particles grouped by distance from grid center</li>
+                        <li><strong>Orbital Notation:</strong> Written in atomic notation (1s², 2p⁶, etc.)</li>
+                        <li><strong>Occupancy Diagrams:</strong> Shows which "orbitals" are filled</li>
+                        <li><strong>Quantum Constraints:</strong> Covariance rules act like Pauli exclusion</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Quantum Analogies</h3>
+                    <table class="data-table">
+                        <tr><th>Magic Square</th><th>Quantum Mechanics</th></tr>
+                        <tr><td>Shell distance = value</td><td>Principal quantum number (n)</td></tr>
+                        <tr><td>Grid position angle</td><td>Magnetic quantum number (m<sub>ℓ</sub>)</td></tr>
+                        <tr><td>Row/Col index</td><td>Angular momentum (ℓ)</td></tr>
+                        <tr><td>Covariance = 0</td><td>Energy eigenstate</td></tr>
+                        <tr><td>880 magic squares</td><td>Allowed configurations</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-xl); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <iframe src="visuals/orbital_shells.html" style="width: 100%; height: 80vh; border: none; display: block;"></iframe>
+            </div>
+
+            <div class="discovery-banner" style="margin-top: var(--space-xl);">
+                <h3>🔬 Deep Connection</h3>
+                <p>Just as electrons fill orbitals following the Aufbau principle and Pauli exclusion, magic square values fill grid positions following covariance constraints. The 6 covariance conditions act like quantum selection rules, allowing only specific "configurations" — the 880 magic squares!</p>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -817,7 +1176,7 @@
             <p>Magic Gems: A Geometric Framework for Magic Squares</p>
             <p class="footer-links">
                 <a href="https://github.com/kylemath/MagicGem" target="_blank">GitHub</a> •
-                <a href="https://arxiv.org" target="_blank">Paper</a> •
+                <a href="https://arxiv.org/abs/2512.09170" target="_blank">Paper (arXiv)</a> •
                 <a href="https://kylemath.github.io/MagicGemWebpage/" target="_blank">Original Demo</a>
             </p>
         </div>

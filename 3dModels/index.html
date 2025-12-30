@@ -151,6 +151,37 @@
             color: #555;
         }
         
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1em;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
         @media (max-width: 768px) {
             .model-grid {
                 grid-template-columns: 1fr;
@@ -182,6 +213,9 @@
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
                 </div>
+                <div class="button-group">
+                    <a href="magicGem_v1.stl" download="magicGem_v1.stl" class="download-btn">📥 Download STL</a>
+                </div>
             </div>
             
             <!-- magicGem_v2.stl -->
@@ -193,6 +227,9 @@
                 </div>
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
+                </div>
+                <div class="button-group">
+                    <a href="magicGem_v2.stl" download="magicGem_v2.stl" class="download-btn">📥 Download STL</a>
                 </div>
             </div>
             
@@ -206,6 +243,9 @@
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
                 </div>
+                <div class="button-group">
+                    <a href="magicGem_v3.stl" download="magicGem_v3.stl" class="download-btn">📥 Download STL</a>
+                </div>
             </div>
             
             <!-- magicGem_v4_end.stl -->
@@ -217,6 +257,9 @@
                 </div>
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
+                </div>
+                <div class="button-group">
+                    <a href="magicGem_v4_end.stl" download="magicGem_v4_end.stl" class="download-btn">📥 Download STL</a>
                 </div>
             </div>
             
@@ -230,6 +273,9 @@
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
                 </div>
+                <div class="button-group">
+                    <a href="magicGem_v5_end-1.stl" download="magicGem_v5_end-1.stl" class="download-btn">📥 Download STL</a>
+                </div>
             </div>
             
             <!-- magicGem_v6_start+1.stl -->
@@ -241,6 +287,9 @@
                 </div>
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
+                </div>
+                <div class="button-group">
+                    <a href="magicGem_v6_start+1.stl" download="magicGem_v6_start+1.stl" class="download-btn">📥 Download STL</a>
                 </div>
             </div>
             
@@ -254,6 +303,9 @@
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
                 </div>
+                <div class="button-group">
+                    <a href="magicGem_v7_start+2.stl" download="magicGem_v7_start+2.stl" class="download-btn">📥 Download STL</a>
+                </div>
             </div>
             
             <!-- weighted_ring.stl -->
@@ -266,6 +318,25 @@
                 <div class="controls-info">
                     🖱️ <strong>Controls:</strong> Left click + drag to rotate | Right click + drag to pan | Scroll to zoom
                 </div>
+                <div class="button-group">
+                    <a href="weighted_ring.stl" download="weighted_ring.stl" class="download-btn">📥 Download STL</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Download All Section -->
+        <div class="model-card" style="text-align: center; margin-bottom: 40px;">
+            <h2>📦 Download All Models</h2>
+            <p style="margin-bottom: 20px; color: #666;">Get all STL files for 3D printing your own Magic Gems collection</p>
+            <div class="button-group" style="justify-content: center;">
+                <a href="magicGem_v1.stl" download class="download-btn">v1</a>
+                <a href="magicGem_v2.stl" download class="download-btn">v2</a>
+                <a href="magicGem_v3.stl" download class="download-btn">v3</a>
+                <a href="magicGem_v4_end.stl" download class="download-btn">v4</a>
+                <a href="magicGem_v5_end-1.stl" download class="download-btn">v5</a>
+                <a href="magicGem_v6_start+1.stl" download class="download-btn">v6</a>
+                <a href="magicGem_v7_start+2.stl" download class="download-btn">v7</a>
+                <a href="weighted_ring.stl" download class="download-btn">Ring</a>
             </div>
         </div>
         

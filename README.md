@@ -2,7 +2,7 @@
 
 An interactive web application for exploring Magic Squares and their 3D geometric representations (Magic Gems).
 [Open the interactive web app](https://kylemath.github.io/magicGemWeb)
-## Quick Start
+## Local download and Quick Start
 
 ```bash
 cd web

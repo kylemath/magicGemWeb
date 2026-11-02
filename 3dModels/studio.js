@@ -357,7 +357,8 @@
       volReal: vol48 / 48,
       volStr: volStr,
       c0: c0,
-      c0Str: c0Str
+      c0Str: c0Str,
+      mom: [momXSum, momYSum, momZSum] // integer first moments in doubled coordinates (vol-weighted centroid x 384)
     };
   }
 
@@ -422,55 +423,68 @@
     // Inner Core G_1(S) = conv(V \ V_0)
     var inner = computeExactHull3D(nonExtremePts2);
 
-    // Two-density ratio (Theorem 4.3): Delta_rho_1 / rho_0 = -vol(G_0)*c_0z / (vol(G_1)*c_1z)
+    // Two-density ratio (Theorem 4.3): Delta_rho_1/rho_0 = -vol(G_0) (c_0 . c_1) / (vol(G_1) |c_1|^2)
+    //   = -(M_0 . M_1) / |M_1|^2, with M_i = vol(G_i) c_i the exact integer first moments (z scaled by lambda).
+    // Valid only when c_0 and c_1 are collinear (Group VI); otherwise / if c_1 = 0 the ratio is n/a.
     var rhoRatioVal = null;
-    var rhoRatioStr = 'N/A';
-    if (outer.c0[2] === 0) {
+    var rhoRatioStr = 'n/a';
+    if (outer.vol48 > 0 && outer.mom[0] === 0 && outer.mom[1] === 0 && outer.mom[2] === 0) {
       rhoRatioVal = 0;
-      rhoRatioStr = '0 (Naturally balanced)';
-    } else if (inner.rank === 3 && inner.vol48 > 0 && inner.c0[2] !== 0) {
-      rhoRatioVal = -(outer.volReal * outer.c0[2]) / (inner.volReal * inner.c0[2]);
-      rhoRatioStr = rhoRatioVal.toFixed(4);
-    } else {
-      rhoRatioStr = 'Degenerate core (rk ' + inner.rank + ')';
-    }
-
-    // Wireframe 1-skeleton edge moments at current lambda (Theorem 4.4)
-    var M0z = 0, L0 = 0;
-    for (var ei = 0; ei < outer.edges.length; ei++) {
-      var e = outer.edges[ei];
-      var pA = ptsLambda[e.uGlobal], pB = ptsLambda[e.vGlobal];
-      var len = Math.hypot(pA[0] - pB[0], pA[1] - pB[1], pA[2] - pB[2]);
-      var midZ = 0.5 * (pA[2] + pB[2]);
-      L0 += len;
-      M0z += len * midZ;
-    }
-
-    var M1z = 0, L1 = 0;
-    if (inner.edges && inner.edges.length > 0) {
-      for (var ie = 0; ie < inner.edges.length; ie++) {
-        var edgeIn = inner.edges[ie];
-        var uG = Array.isArray(edgeIn) ? edgeIn[0] : edgeIn.uGlobal;
-        var vG = Array.isArray(edgeIn) ? edgeIn[1] : edgeIn.vGlobal;
-        var qA = ptsLambda[uG], qB = ptsLambda[vG];
-        var lenIn = Math.hypot(qA[0] - qB[0], qA[1] - qB[1], qA[2] - qB[2]);
-        var midZIn = 0.5 * (qA[2] + qB[2]);
-        L1 += lenIn;
-        M1z += lenIn * midZIn;
+      rhoRatioStr = '0';
+    } else if (inner.rank === 3 && inner.vol48 > 0) {
+      var M0v = [outer.mom[0], outer.mom[1], outer.mom[2] * lambda];
+      var M1v = [inner.mom[0], inner.mom[1], inner.mom[2] * lambda];
+      var dotM = M0v[0] * M1v[0] + M0v[1] * M1v[1] + M0v[2] * M1v[2];
+      var n1 = M1v[0] * M1v[0] + M1v[1] * M1v[1] + M1v[2] * M1v[2];
+      var crx = [M0v[1] * M1v[2] - M0v[2] * M1v[1], M0v[2] * M1v[0] - M0v[0] * M1v[2], M0v[0] * M1v[1] - M0v[1] * M1v[0]];
+      var n0 = M0v[0] * M0v[0] + M0v[1] * M0v[1] + M0v[2] * M0v[2];
+      var crN = crx[0] * crx[0] + crx[1] * crx[1] + crx[2] * crx[2];
+      if (n1 > 0 && crN <= 1e-12 * n0 * n1) {
+        rhoRatioVal = -dotM / n1;
+        var exactOK = (Math.abs(lambda - 1) < 1e-12) || (M0v[2] === 0 && M1v[2] === 0);
+        rhoRatioStr = exactOK ? fmtRational(-dotM, n1) : rhoRatioVal.toFixed(4);
       }
     }
 
+    // Wireframe 1-skeleton edge moments at current lambda (Theorem 4.4):
+    // M_i = sum over rods of (length x midpoint) as a 3-vector; rod mass ~ d^2 * length.
+    function edgeMoment(edgeList, getU, getV) {
+      var M = [0, 0, 0], L = 0;
+      for (var k = 0; k < edgeList.length; k++) {
+        var A = ptsLambda[getU(edgeList[k])], B = ptsLambda[getV(edgeList[k])];
+        var ln = Math.hypot(A[0] - B[0], A[1] - B[1], A[2] - B[2]);
+        L += ln;
+        M[0] += ln * 0.5 * (A[0] + B[0]);
+        M[1] += ln * 0.5 * (A[1] + B[1]);
+        M[2] += ln * 0.5 * (A[2] + B[2]);
+      }
+      return { M: M, L: L };
+    }
+    var wo = edgeMoment(outer.edges, function (e) { return e.uGlobal; }, function (e) { return e.vGlobal; });
+    var wi = (inner.edges && inner.edges.length > 0)
+      ? edgeMoment(inner.edges,
+          function (e) { return Array.isArray(e) ? e[0] : e.uGlobal; },
+          function (e) { return Array.isArray(e) ? e[1] : e.vGlobal; })
+      : { M: [0, 0, 0], L: 0 };
+    var M0z = wo.M[2], L0 = wo.L, M1z = wi.M[2], L1 = wi.L;
+
     var wireRatio = null;
     var wireRatioNote = '';
-    if (Math.abs(M0z) < 1e-9) {
+    var wn0 = wo.M[0] * wo.M[0] + wo.M[1] * wo.M[1] + wo.M[2] * wo.M[2];
+    var wn1 = wi.M[0] * wi.M[0] + wi.M[1] * wi.M[1] + wi.M[2] * wi.M[2];
+    var wdot = wo.M[0] * wi.M[0] + wo.M[1] * wi.M[1] + wo.M[2] * wi.M[2];
+    var wcx = [wo.M[1] * wi.M[2] - wo.M[2] * wi.M[1], wo.M[2] * wi.M[0] - wo.M[0] * wi.M[2], wo.M[0] * wi.M[1] - wo.M[1] * wi.M[0]];
+    var wcN = wcx[0] * wcx[0] + wcx[1] * wcx[1] + wcx[2] * wcx[2];
+    if (wn0 < 1e-18) {
       wireRatio = 0;
-      wireRatioNote = 'M₀,z = 0 (Outer wireframe self-balances: d₁ = 0)';
-    } else if (M0z * M1z < -1e-9) {
-      wireRatio = Math.sqrt(-M0z / M1z);
+      wireRatioNote = 'M₀ = 0 (Outer wireframe self-balances: d₁ = 0)';
+    } else if (wn1 > 1e-18 && wcN <= 1e-9 * wn0 * wn1 && wdot < 0) {
+      wireRatio = Math.sqrt(-wdot / wn1);
       wireRatioNote = 'd₁/d₀ = ' + wireRatio.toFixed(3) + ' (Opposing moments)';
-    } else {
-      wireRatio = null;
+    } else if (wn1 > 1e-18 && wcN <= 1e-9 * wn0 * wn1) {
       wireRatioNote = 'Same-sign wireframe moments (Use K₁₆ equal-mass struts)';
+    } else {
+      wireRatioNote = 'n/a (inner moment zero or not collinear)';
     }
 
     // Quadrupole Q_xy and Point-Cloud Inertia Ratio I_perp / I_zz(lambda)
@@ -2439,8 +2453,28 @@
     if (q.get('still') === '1') { state.autoRotate = false; state.still = true; }
   }
 
+  function runSelfTest() {
+    // ?selftest=1 : dump exact-math checks for all 880 squares into #selftest (used for QA)
+    var out = { stable: {}, ratios: {}, wire673: null };
+    [1, 0.2].forEach(function (lam) {
+      var st = 0, tot = 0;
+      for (var s = 1; s <= 880; s++) {
+        var m = analyzeSquareMechanics(s, false, lam);
+        st += m.stability.stableCount; tot += m.stability.totalFaces;
+        if (lam === 1 && [673, 502, 45, 54, 50, 307, 49, 38, 47, 175, 70].indexOf(s) >= 0) out.ratios[s] = m.rhoRatioStr;
+        if (lam === 1 && [673, 45, 175].indexOf(s) >= 0) out.wire673 = (out.wire673 ? out.wire673 + ' | ' : '') + s + ': ' + m.wireStats.note;
+      }
+      out.stable[lam] = st + '/' + tot;
+    });
+    var pre = document.createElement('pre');
+    pre.id = 'selftest';
+    pre.textContent = 'SELFTEST ' + JSON.stringify(out);
+    document.body.appendChild(pre);
+  }
+
   function bootStudio() {
     applyUrlParams();
+    if (new URLSearchParams(window.location.search).get('selftest') === '1') runSelfTest();
     initSection1Generator();
     wireStudioControls();
     syncControlsFromState();

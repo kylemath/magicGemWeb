@@ -538,7 +538,9 @@
     }
 
     var summaryRow = (window.ALL880_SUMMARY && window.ALL880_SUMMARY[sqNum - 1]) || null;
-    var groupCode = summaryRow ? summaryRow[1] : 'VI';
+    var ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    var dudNum = window.ALL880_DUDENEY ? window.ALL880_DUDENEY[sqNum - 1] : 0;
+    var groupCode = ROMAN[dudNum] || '?';
 
     return {
       sqNum: sqNum,
@@ -1112,7 +1114,7 @@
     var cylGeom = new THREE.CylinderGeometry(radius, radius, len, radialSegs || 12, 1, false);
     var mid = new THREE.Vector3().addVectors(vA, vB).multiplyScalar(0.5);
     var quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
-    cylGeom.applyQuaternion(quat);
+    cylGeom.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(quat));
     cylGeom.translate(mid.x, mid.y, mid.z);
 
     var mesh = new THREE.Mesh(cylGeom, material);
@@ -1337,21 +1339,6 @@
   // 6. MAIN STUDIO STATE & SECTION 1 3D SCENE CONTROLLER
   // =========================================================================
 
-  var GROUP_NAMES = {
-    'I': 'Group I',
-    'II': 'Group II',
-    'III': 'Group III (Associative / Symmetric)',
-    'IV': 'Group IV (Simple)',
-    'V': 'Group V',
-    'VI': 'Group VI (Pandiagonal / Nasik)',
-    'VII': 'Group VII',
-    'VIII': 'Group VIII',
-    'IX': 'Group IX',
-    'X': 'Group X',
-    'XI': 'Group XI',
-    'XII': 'Group XII'
-  };
-
   var state = {
     sqNum: 175,
     isTwin: false,
@@ -1469,6 +1456,7 @@
     }
 
     window.addEventListener('resize', handleGeneratorResize);
+    if (window.ResizeObserver) new ResizeObserver(handleGeneratorResize).observe(container);
   }
 
   function pointInPoly2D(x, y, pts) {
@@ -1488,6 +1476,7 @@
     var w = container.clientWidth || 500;
     var h = container.clientHeight || 460;
     genCamera.aspect = w / h;
+    genCamera.zoom = Math.max(0.45, Math.min(1, (w / h) / 0.9)); // keep the hull in frame in narrow panes
     genCamera.updateProjectionMatrix();
     genRenderer.setSize(w, h);
   }
@@ -1670,7 +1659,7 @@
         for (var ei2 = 0; ei2 < mech.inner.edges.length; ei2++) {
           var eIn = mech.inner.edges[ei2];
           var uId = Array.isArray(eIn) ? eIn[0] : eIn.uGlobal;
-          var vId = Array.isArray(eIn) ? eIn.vGlobal : eIn[1];
+          var vId = Array.isArray(eIn) ? eIn[1] : eIn.vGlobal;
           addCylinderStrutToGroup(genPrintableGroup, pts3[uId], pts3[vId], rInner, matStrutInner, 12);
         }
       }
@@ -1771,53 +1760,27 @@
   // 7. DOM READOUTS & SUB-CONTROL UPDATER
   // =========================================================================
 
+  function setText(id, txt) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  }
+
   function updateStudioReadoutsUI(mech) {
-    var twinLabel = mech.isTwin ? ' · Mirror Twin S* = r²(17−S)' : '';
-    var archLabels = {
-      solid: 'Solid Convex Hull G_λ(S)',
-      dual: 'Dual-Material "Diamond-in-a-Diamond" (G₀ + G₁)',
-      wireframe: 'Nested Ball-&-Rod Wireframe G(G₀) ∪ G(G₁)',
-      k16: 'Complete K₁₆ Strut Network (120 Rods)',
-      radial: '16-Spoke Radial Hub Star (Section 2)',
-      papercraft: '2D Unfolded Papercraft Cutout Net'
+    var modeLabels = {
+      solid: 'Solid hull', dual: 'Dual density', wireframe: 'Wireframe',
+      k16: 'K₁₆ lattice', radial: 'Radial star', papercraft: 'Papercraft net'
     };
+    var sqTag = '#' + mech.sqNum + (mech.isTwin ? '*' : '');
+    setText('gen-header-status', sqTag + ' · Group ' + mech.groupCode + ' · ' + (modeLabels[state.archMode] || state.archMode) +
+      ' · ' + state.printScaleMm + ' mm · height ' + (15 * state.lambda * (state.printScaleMm / 3.0)).toFixed(1) + ' mm');
 
-    var hdrEl = document.getElementById('gen-header-status');
-    if (hdrEl) {
-      hdrEl.textContent = 'Frénicle Square #' + mech.sqNum + twinLabel + ' (' +
-        (GROUP_NAMES[mech.groupCode] || ('Group ' + mech.groupCode)) + ') — ' +
-        (archLabels[state.archMode] || state.archMode);
-    }
-
-    // Viewport badges
-    var bLeft = document.getElementById('badge-left-top');
-    if (bLeft) {
-      bLeft.textContent = 'Square #' + mech.sqNum + (mech.isTwin ? '*' : '') +
-        ' · Group ' + mech.groupCode + ' · f = (' + mech.outer.fVec.join(', ') + ')';
-    }
-    var bRight = document.getElementById('badge-right-top');
-    if (bRight) {
-      var heightMm = (15 * state.lambda * (state.printScaleMm / 3.0)).toFixed(1);
-      bRight.textContent = 'Footprint: ' + state.printScaleMm + '×' + state.printScaleMm +
-        ' mm · Height: ' + heightMm + ' mm';
-    }
-
-    // Export button filenames & Dual-Material buttons visibility
     var fname = 'magicGem_#' + mech.sqNum + (mech.isTwin ? '_twin' : '') + '_' +
       state.archMode + '_lam' + state.lambda.toFixed(2) + '.stl';
-    var fnEl = document.getElementById('dl-stl-filename');
-    if (fnEl) fnEl.textContent = fname;
+    setText('dl-stl-filename', fname);
 
     var dualBtns = document.getElementById('dual-stl-btns');
-    if (dualBtns) {
-      dualBtns.style.display = (state.archMode === 'dual') ? 'flex' : 'none';
-    }
+    if (dualBtns) dualBtns.style.display = (state.archMode === 'dual') ? 'flex' : 'none';
 
-    // 4x4 Matrix Grid
-    var matTitle = document.getElementById('matrix-box-title');
-    if (matTitle) {
-      matTitle.textContent = 'Square #' + mech.sqNum + (mech.isTwin ? ' (Twin S*)' : '') + ' (4×4)';
-    }
     var matGrid = document.getElementById('gen-matrix-grid');
     if (matGrid) {
       matGrid.innerHTML = '';
@@ -1828,77 +1791,42 @@
         var sVal = mech.sq[i];
         var zVal = (sVal - 8.5).toFixed(1);
         cell.innerHTML = '<span>' + sVal + '</span><span class="z-sub">' + (sVal > 8.5 ? '+' + zVal : zVal) + '</span>';
-        cell.title = 'Entry s=' + sVal + ' · Role: ' +
-          (role === 'outer' ? 'Outer Hull Corner V₀' : (role === 'face' ? 'Hull Face Point V_face' : 'Strictly Interior V_int'));
+        cell.title = 'Entry ' + sVal + ' · ' +
+          (role === 'outer' ? 'hull corner' : (role === 'face' ? 'on a hull face' : 'strictly interior'));
         matGrid.appendChild(cell);
       }
     }
-    document.getElementById('cnt-v0').textContent = String(mech.counts.v0);
-    document.getElementById('cnt-vface').textContent = String(mech.counts.vface);
-    document.getElementById('cnt-vint').textContent = String(mech.counts.vint);
+    setText('cnt-v0', String(mech.counts.v0));
+    setText('cnt-vface', String(mech.counts.vface));
+    setText('cnt-vint', String(mech.counts.vint));
 
-    // Mechanical stats rows
-    document.getElementById('ro-group').textContent = GROUP_NAMES[mech.groupCode] || ('Group ' + mech.groupCode);
-    document.getElementById('ro-fvec').textContent = '(' + mech.outer.fVec.join(', ') + ') · V−E+F = 2 ✓';
     var nTabs = mech.outer.fVec[0] - 1;
     var nFolds = mech.outer.fVec[2] - 1;
-    document.getElementById('ro-tabs').textContent = 'N_tabs = f₀−1 = ' + nTabs + ' tabs (' + nFolds + ' folds)';
-
-    var vol1Disp = mech.inner.rank === 3 ? mech.inner.volStr : ('0 (rk ' + mech.inner.rank + ')');
-    document.getElementById('ro-vols').textContent = 'G₀: ' + mech.outer.volStr + ' · G₁: ' + vol1Disp;
+    setText('ro-group', mech.groupCode);
+    setText('ro-fvec', '(' + mech.outer.fVec.join(', ') + ')');
+    setText('ro-tabs', nTabs + ' (' + nFolds + ' folds)');
+    setText('ro-vols', mech.inner.rank === 3 ? mech.outer.volStr + ' / ' + mech.inner.volStr : mech.outer.volStr);
 
     var isC0Zero = (mech.outer.c0[0] === 0 && mech.outer.c0[1] === 0 && mech.outer.c0[2] === 0);
     var c0Disp = '(' + mech.outer.c0Str[0] + ', ' + mech.outer.c0Str[1] + ', ' +
-      (mech.outer.c0[2] === 0 ? '0' : (mech.outer.c0Str[2] + '·λ')) + ')';
-    document.getElementById('ro-c0').textContent = c0Disp + (isC0Zero ? ' [Balanced ✓]' : ' [Needs core]');
+      (mech.outer.c0[2] === 0 ? '0' : (mech.outer.c0Str[2] + 'λ')) + ')';
+    setText('ro-c0', isC0Zero ? 'balanced' : c0Disp);
+    var c0El = document.getElementById('ro-c0');
+    if (c0El) c0El.title = 'c₀ = ' + c0Disp;
 
-    if (state.archMode === 'wireframe' || state.archMode === 'k16') {
-      document.getElementById('ro-balance').textContent = mech.wireStats.note;
-    } else {
-      document.getElementById('ro-balance').textContent = 'Δρ₁/ρ₀ = ' + mech.rhoRatioStr;
+    var balRow = document.getElementById('row-balance');
+    var showBal = (state.archMode === 'dual' || state.archMode === 'wireframe' || state.archMode === 'k16');
+    if (balRow) balRow.style.display = showBal ? '' : 'none';
+    if (showBal) {
+      var balFull = (state.archMode === 'dual') ? 'Δρ₁/ρ₀ = ' + mech.rhoRatioStr : mech.wireStats.note;
+      setText('ro-balance', balFull.split(' (')[0]);
+      var balEl = document.getElementById('ro-balance');
+      if (balEl) balEl.title = balFull;
     }
-
-    document.getElementById('ro-qxy').textContent = '|Q_xy| = ' + Math.abs(mech.Qxy).toFixed(0) +
-      ' · I⊥/I_zz = ' + mech.inertiaRatio.toFixed(3);
 
     var pctStab = mech.stability.totalFaces > 0
-      ? ((100 * mech.stability.stableCount) / mech.stability.totalFaces).toFixed(1)
-      : '0.0';
-    document.getElementById('ro-stab').textContent = mech.stability.stableCount + ' / ' +
-      mech.stability.totalFaces + ' (' + pctStab + '%) · max ' + mech.stability.maxTipDeg.toFixed(1) + '°';
-
-    // Contextual fabrication note
-    var noteEl = document.getElementById('arch-note-box');
-    if (noteEl) {
-      if (state.archMode === 'dual') {
-        noteEl.innerHTML = '<strong>Theorem 4.3 Dual-Material Balance:</strong> Print outer shell $\\mathcal{G}_0$ at base infill $\\rho_0$ and inner core $\\mathcal{G}_1$ with density offset $\\Delta\\rho_1/\\rho_0 = ' +
-          mech.rhoRatioStr + '$. ' + (mech.isTwin ? 'Mirror Twin $S^*$ negates $\\mathbf{c}_0$ and $\\mathbf{c}_1$ simultaneously, leaving $\\Delta\\rho_1/\\rho_0$ invariant!' : 'Use the two STL buttons above to load both shells into a dual-extruder slicer.');
-      } else if (state.archMode === 'wireframe') {
-        noteEl.innerHTML = '<strong>Theorem 4.4 Nested Wireframe:</strong> ' + mech.wireStats.note +
-          '. Outer 1-skeleton has $f_1 = ' + mech.outer.fVec[1] + '$ rods; inner core has $' +
-          (mech.inner.edges ? mech.inner.edges.length : 0) + '$ rods.';
-      } else if (state.archMode === 'k16') {
-        noteEl.innerHTML = '<strong>Theorem 4.4 Complete $K_{16}$ Lattice:</strong> Connects all $\\binom{16}{2}=120$ vertex pairs. In <em>Equal-Mass Tapered ($\\mu=0$)</em> mode, rod gauge scales as $\\ell_{ij}^{-1/2}$ so the centroid coincides with the origin $O$ for every one of the 880 squares.';
-      } else if (state.archMode === 'radial') {
-        noteEl.innerHTML = '<strong>Section 2 Radial Hub Star:</strong> 16 radial spokes emanate from the central fulcrum hub $O=(0,0,0)$. For Group VI pandiagonal squares like <strong>#70</strong> at $\\lambda=0.20$ ($v/u = 9/4$), constant-gauge spokes ($\\beta=1$) satisfy exact Pell radial equilibrium $\\sum m_i \\mathbf{p}_i = \\mathbf{0}$.';
-      } else if (state.archMode === 'papercraft') {
-        noteEl.innerHTML = '<strong>Proposition 4.5 Unfolded Papercraft Net:</strong> Spanning-tree unfolding of all $f_2 = ' +
-          mech.outer.fVec[2] + '$ facets with $f_2 - 1 = ' + nFolds + '$ internal dashed fold lines and $N_{\\mathrm{tabs}} = f_0 - 1 = ' +
-          nTabs + '$ labeled glue tabs. Click <strong>Download Printable SVG Net</strong> above to print and score on cardstock.';
-      } else {
-        noteEl.innerHTML = '<strong>Sections 3–5 Solid Convex Hull $\\mathcal{G}_\\lambda(S)$:</strong> Watertight manifold polyhedron with $f = (' +
-          mech.outer.fVec.join(', ') + ')$. At $\\lambda = ' + state.lambda.toFixed(4) + '$, $' +
-          mech.stability.stableCount + '/' + mech.stability.totalFaces + '$ facets (' + pctStab + '%) are gravitationally stable resting bases.';
-      }
-      if (typeof window.renderMathInElement === 'function') {
-        window.renderMathInElement(noteEl, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false }
-          ]
-        });
-      }
-    }
+      ? ((100 * mech.stability.stableCount) / mech.stability.totalFaces).toFixed(1) : '0.0';
+    setText('ro-stab', mech.stability.stableCount + '/' + mech.stability.totalFaces + ' · ' + pctStab + '%');
   }
 
   function renderModeSubControls() {
@@ -1910,37 +1838,37 @@
     row.innerHTML = '';
     if (state.archMode === 'wireframe') {
       wrap.style.display = 'flex';
-      lbl.textContent = 'Inner Strut Ratio d₁/d₀';
+      lbl.textContent = 'Inner strut d₁/d₀';
       var bAuto = document.createElement('button');
       bAuto.className = 'mini-btn' + (state.wireRatioMode === 'auto' ? ' active' : '');
-      bAuto.textContent = 'Thm 4.4 Balanced d₁/d₀';
+      bAuto.textContent = 'Balanced';
       bAuto.onclick = function () { state.wireRatioMode = 'auto'; renderModeSubControls(); rebuildStudioScene(); };
       var bEq = document.createElement('button');
       bEq.className = 'mini-btn' + (state.wireRatioMode === 'equal' ? ' active' : '');
-      bEq.textContent = 'Uniform d₁ = d₀';
+      bEq.textContent = 'Uniform';
       bEq.onclick = function () { state.wireRatioMode = 'equal'; renderModeSubControls(); rebuildStudioScene(); };
       row.appendChild(bAuto);
       row.appendChild(bEq);
     } else if (state.archMode === 'k16') {
       wrap.style.display = 'flex';
-      lbl.textContent = 'K₁₆ Mass Exponent μ';
+      lbl.textContent = 'K₁₆ mass μ';
       var bMu0 = document.createElement('button');
       bMu0.className = 'mini-btn' + (state.k16MuMode === 'mu0' ? ' active' : '');
-      bMu0.textContent = 'μ = 0 (Equal-Mass Balanced)';
+      bMu0.textContent = 'μ=0 balanced';
       bMu0.onclick = function () { state.k16MuMode = 'mu0'; renderModeSubControls(); rebuildStudioScene(); };
       var bMu1 = document.createElement('button');
       bMu1.className = 'mini-btn' + (state.k16MuMode === 'mu1' ? ' active' : '');
-      bMu1.textContent = 'μ = 1 (Uniform Gauge)';
+      bMu1.textContent = 'μ=1 uniform';
       bMu1.onclick = function () { state.k16MuMode = 'mu1'; renderModeSubControls(); rebuildStudioScene(); };
       row.appendChild(bMu0);
       row.appendChild(bMu1);
     } else if (state.archMode === 'radial') {
       wrap.style.display = 'flex';
-      lbl.textContent = 'Radial Spoke Profile β';
+      lbl.textContent = 'Spoke profile β';
       [
-        { b: 1, txt: 'β = 1 (Uniform Rod)' },
-        { b: 0, txt: 'β = 0 (Terminal Ball)' },
-        { b: 3, txt: 'β = 3 (Conical Horn)' }
+        { b: 1, txt: 'β=1 rod' },
+        { b: 0, txt: 'β=0 ball' },
+        { b: 3, txt: 'β=3 horn' }
       ].forEach(function (item) {
         var btn = document.createElement('button');
         btn.className = 'mini-btn' + (state.radialBeta === item.b ? ' active' : '');
@@ -1961,106 +1889,66 @@
     {
       id: 'v1',
       file: 'magicGem_v1.stl',
-      title: 'magicGem_v1.stl — 8-Vertex Outer Hull Wireframe',
+      title: 'v1 · Outer wireframe',
       sqNum: 51,
       arch: 'wireframe',
-      badges: [
-        { text: 'Frénicle #51 · Group VI', cls: 'c-emerald' },
-        { text: 'V₀ = 8, V_face = 4, V_int = 4', cls: 'c-cobalt' },
-        { text: 'Section 4 · Outer 1-Skeleton', cls: 'c-amber' }
-      ],
-      desc: 'Ball-and-rod wireframe of the 8-vertex outer hull of pandiagonal Square #51 (f = (8, 14, 8)), where 4 entries lie on facet planes and 4 lie strictly inside.'
+      cap: '8 hull vertices'
     },
     {
       id: 'v2',
       file: 'magicGem_v2.stl',
-      title: 'magicGem_v2.stl — Complete K₁₆ 120-Rod Strut Lattice',
+      title: 'v2 · K₁₆ struts',
       sqNum: 43,
       arch: 'k16',
-      badges: [
-        { text: 'Frénicle #43 · Group VIII', cls: 'c-emerald' },
-        { text: 'V₀ = 9, V_face = 3, V_int = 4', cls: 'c-cobalt' },
-        { text: 'Theorem 4.4 · 120 Struts', cls: 'c-amber' }
-      ],
-      desc: 'Complete 16-vertex K₁₆ strut network connecting all 120 pairs of lifted grid points for Square #43, illustrating Theorem 4.4 wireframe mechanics.'
+      cap: '120-rod lattice'
     },
     {
       id: 'v3',
       file: 'magicGem_v3.stl',
-      title: 'magicGem_v3.stl — 10-Vertex Pandiagonal Hull (f = 10, 20, 12)',
+      title: 'v3 · Solid hull',
       sqNum: 6,
       arch: 'solid',
-      badges: [
-        { text: 'Frénicle #6 · Group VI', cls: 'c-emerald' },
-        { text: 'V₀ = 10, V_face = 2, V_int = 4', cls: 'c-cobalt' },
-        { text: 'Section 5 · Resting Hull', cls: 'c-amber' }
-      ],
-      desc: 'Solid convex hull of pandiagonal Square #6 with 10 extreme hull vertices, 2 coplanar face points, and 4 interior core vertices.'
+      cap: '10 hull vertices'
     },
     {
       id: 'v4',
       file: 'magicGem_v4_end.stl',
-      title: 'magicGem_v4_end.stl — Zero-Interior Hull (V_int = 0)',
+      title: 'v4 · Boundary hull',
       sqNum: 12,
       arch: 'solid',
-      badges: [
-        { text: 'Frénicle #12 · Group VI', cls: 'c-emerald' },
-        { text: 'V₀ = 10, V_face = 6, V_int = 0', cls: 'c-cobalt' },
-        { text: 'Section 4 · All 16 on ∂G₀', cls: 'c-amber' }
-      ],
-      desc: 'Boundary-saturated pandiagonal gem (#12) where all 6 non-corner points lie strictly on the facets of ∂G₀, leaving zero strictly interior points.'
+      cap: 'no interior points'
     },
     {
       id: 'v5',
       file: 'magicGem_v5_end-1.stl',
-      title: 'magicGem_v5_end-1.stl — 2-Point Interior Segment Core',
+      title: 'v5 · Segment core',
       sqNum: 18,
       arch: 'solid',
-      badges: [
-        { text: 'Frénicle #18 · Group VI', cls: 'c-emerald' },
-        { text: 'V₀ = 10, V_face = 4, V_int = 2', cls: 'c-cobalt' },
-        { text: 'Section 4 · Segment Core', cls: 'c-amber' }
-      ],
-      desc: 'Solid hull exemplar (#18) with 10 extreme vertices, 4 coplanar face points, and 2 strictly interior points forming a 1D interior segment.'
+      cap: '2 interior points'
     },
     {
       id: 'v6',
       file: 'magicGem_v6_start+1.stl',
-      title: 'magicGem_v6_start+1.stl — Group V Asymmetric-Core Gem',
+      title: 'v6 · Offset core',
       sqNum: 33,
       arch: 'solid',
-      badges: [
-        { text: 'Frénicle #33 · Group V', cls: 'c-emerald' },
-        { text: 'V₀ = 10, V_face = 3, V_int = 3', cls: 'c-cobalt' },
-        { text: 'Theorem 4.3 · Core Offset', cls: 'c-amber' }
-      ],
-      desc: 'Group V solid hull (#33) with a 6-point rank-3 inner core (vol(G₁) = 23/4) requiring two-density compensation Δρ₁/ρ₀ ≈ −0.648.'
+      cap: 'asymmetric core'
     },
     {
       id: 'v7',
       file: 'magicGem_v7_start+2.stl',
-      title: 'magicGem_v7_start+2.stl — 11-Vertex Group IV Hull',
+      title: 'v7 · 11-vertex hull',
       sqNum: 25,
       arch: 'solid',
-      badges: [
-        { text: 'Frénicle #25 · Group IV', cls: 'c-emerald' },
-        { text: 'V₀ = 11, V_face = 1, V_int = 4', cls: 'c-cobalt' },
-        { text: 'Section 5 · 16-Facet Hull', cls: 'c-amber' }
-      ],
-      desc: 'High-facet Group IV solid polyhedron (#25, f = (11, 25, 16)) with a 5-point inner core and 13/16 (81.2%) gravitationally stable resting facets.'
+      cap: '11 hull vertices'
     },
     {
       id: 'ring',
       file: 'weighted_ring.stl',
-      title: 'weighted_ring.stl — Planar Conical-Fulcrum Balance Wheel',
+      title: 'Weighted ring',
       sqNum: 175,
       arch: 'radial',
-      badges: [
-        { text: '1D Magic Ring · N ∈ {4, 5}', cls: 'c-emerald' },
-        { text: 'Conical Pivot Cap + Stand', cls: 'c-cobalt' },
-        { text: 'Section 2 · Planar Precursor', cls: 'c-amber' }
-      ],
-      desc: 'Self-balancing 1D radial spoke wheel with perimeter rim, 45° conical pivot cap, and vertical support pedestal from weighted_ring.scad.'
+      cap: 'balance wheel on a conical pivot'
     }
   ];
 
@@ -2093,28 +1981,28 @@
       card.className = 'ref-card';
       card.setAttribute('data-ref-idx', String(idx));
 
-      var badgesHtml = item.badges.map(function (b) {
-        return '<span class="c-pill ' + b.cls + '">' + b.text + '</span>';
-      }).join('');
+      var dudN = window.ALL880_DUDENEY ? window.ALL880_DUDENEY[item.sqNum - 1] : 0;
+      var ROMAN_REF = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+      var capLine = item.id === 'ring'
+        ? item.cap
+        : 'Square #' + item.sqNum + ' · Group ' + (ROMAN_REF[dudN] || '?') + ' · ' + item.cap;
 
       card.innerHTML =
         '<div class="ref-card-head">' +
-          '<div class="ref-badges">' + badgesHtml + '</div>' +
           '<h3>' + item.title + '</h3>' +
-          '<p>' + item.desc + '</p>' +
+          '<p>' + capLine + '</p>' +
         '</div>' +
         '<div class="ref-viewer-wrap">' +
           '<canvas class="ref-canvas" width="420" height="290"></canvas>' +
-          '<div class="ref-loading" id="ref-load-' + idx + '">Loading ' + item.file + '…</div>' +
+          '<div class="icon-row">' +
+            '<button class="icon-btn active" data-act="rot" title="Auto-rotate">↻</button>' +
+            '<button class="icon-btn" data-act="wire" title="Wireframe">⊞</button>' +
+          '</div>' +
+          '<div class="ref-loading" id="ref-load-' + idx + '">Loading…</div>' +
         '</div>' +
         '<div class="ref-card-foot">' +
-          '<div class="ref-tool-btns">' +
-            '<button class="mini-btn active" data-act="rot">↻ Auto-Rotate</button>' +
-            '<button class="mini-btn" data-act="wire">⊞ Wireframe</button>' +
-            '<button class="mini-btn" data-act="reset">🎯 Reset</button>' +
-            '<button class="mini-btn" data-act="studio" title="Open this square & architecture in Section 1 Generator">↑ Load in Studio</button>' +
-          '</div>' +
-          '<a href="' + item.file + '" download="' + item.file + '" class="dl-pill">📥 Download STL</a>' +
+          '<a href="' + item.file + '" download="' + item.file + '" class="dl-link">Download STL</a>' +
+          '<button class="btn-sec" data-act="studio" title="Open this square in the studio">Load in Studio</button>' +
         '</div>';
 
       grid.appendChild(card);
@@ -2128,7 +2016,7 @@
       scene.background = new THREE.Color(0x0f2528);
 
       var camera = new THREE.PerspectiveCamera(38, 420 / 290, 0.1, 1000);
-      camera.position.set(0, -3.2, 2.2);
+      camera.position.set(0, -4.6, 3.1);
       camera.up.set(0, 0, 1);
 
       var controls = new THREE.OrbitControls(camera, canvas2d);
@@ -2170,7 +2058,7 @@
           var size = new THREE.Vector3();
           box.getSize(size);
           var maxDim = Math.max(size.x, size.y, size.z) || 1;
-          var scaleFactor = 2.15 / maxDim;
+          var scaleFactor = 2.0 / maxDim;
           geometry.scale(scaleFactor, scaleFactor, scaleFactor);
 
           var mat = new THREE.MeshPhysicalMaterial({
@@ -2187,14 +2075,13 @@
         },
         undefined,
         function () {
-          if (loadEl) loadEl.textContent = 'Preview unavailable (use Download STL)';
+          if (loadEl) loadEl.textContent = 'Preview unavailable';
         }
       );
 
       // Toolbar button handlers
       var btnRot = card.querySelector('[data-act="rot"]');
       var btnWire = card.querySelector('[data-act="wire"]');
-      var btnReset = card.querySelector('[data-act="reset"]');
       var btnStudio = card.querySelector('[data-act="studio"]');
 
       btnRot.addEventListener('click', function () {
@@ -2205,10 +2092,6 @@
         if (!viewerObj.mesh) return;
         viewerObj.mesh.material.wireframe = !viewerObj.mesh.material.wireframe;
         btnWire.classList.toggle('active', viewerObj.mesh.material.wireframe);
-      });
-      btnReset.addEventListener('click', function () {
-        controls.reset();
-        camera.position.set(0, -3.2, 2.2);
       });
       btnStudio.addEventListener('click', function () {
         state.sqNum = item.sqNum;
@@ -2258,8 +2141,8 @@
       btnCopy.addEventListener('click', function () {
         var code = getCurrentScadText();
         navigator.clipboard.writeText(code).then(function () {
-          btnCopy.textContent = '✓ Copied to Clipboard!';
-          setTimeout(function () { btnCopy.textContent = '📋 Copy Code'; }, 1800);
+          btnCopy.textContent = 'Copied ✓';
+          setTimeout(function () { btnCopy.textContent = 'Copy'; }, 1800);
         });
       });
     }
@@ -2307,7 +2190,7 @@
     var lamSl = document.getElementById('gen-lam-slider');
     if (lamSl) lamSl.value = String(state.lambda);
     var lamVal = document.getElementById('gen-lam-val');
-    if (lamVal) lamVal.textContent = state.lambda.toFixed(4);
+    if (lamVal) lamVal.textContent = 'λ = ' + state.lambda.toFixed(4);
 
     document.querySelectorAll('[data-lam-preset]').forEach(function (b) {
       var v = parseFloat(b.getAttribute('data-lam-preset'));
@@ -2327,7 +2210,7 @@
     var twinBtn = document.getElementById('btn-mirror-twin');
     if (twinBtn) {
       twinBtn.classList.toggle('active', state.isTwin);
-      twinBtn.innerHTML = '⇄ Mirror Twin S* = r²S̄: ' + (state.isTwin ? 'ON' : 'OFF');
+      twinBtn.textContent = '⇄ Twin: ' + (state.isTwin ? 'on' : 'off');
     }
 
     document.querySelectorAll('#arch-tabs .arch-tab').forEach(function (tab) {
@@ -2342,7 +2225,7 @@
 
     var btn54 = document.getElementById('btn-sq-54');
     if (btn54) {
-      btn54.textContent = state.sqNum === 45 ? '⇄ #54 Cavity Twin' : '⇄ #45 Denser Twin';
+      btn54.textContent = state.sqNum === 45 ? '→ #54' : '→ #45';
       btn54.classList.toggle('active', state.sqNum === 45 || state.sqNum === 54);
     }
 
@@ -2508,7 +2391,10 @@
     });
   }
 
+  var stillFrames = 0;
   function animateStudioLoop() {
+    // ?still=1 (screenshot/test mode): render a fixed number of frames then stop
+    if (state.still && ++stillFrames > 90) return;
     requestAnimationFrame(animateStudioLoop);
 
     // Render Section 1 Generator
@@ -2531,10 +2417,36 @@
   }
 
   // Boot Studio on DOMContentLoaded
+  function applyUrlParams() {
+    // Optional deep-link / test hook: ?sq=673&mode=dual&lam=0.2&twin=1&scale=60
+    var q = new URLSearchParams(window.location.search);
+    var sq = parseInt(q.get('sq'), 10);
+    if (sq >= 1 && sq <= 880) state.sqNum = sq;
+    var m = q.get('mode');
+    if (m && ['solid', 'dual', 'wireframe', 'k16', 'radial', 'papercraft'].indexOf(m) >= 0) state.archMode = m;
+    var lam = parseFloat(q.get('lam'));
+    if (lam >= 0.1 && lam <= 1) state.lambda = lam;
+    var sc = parseFloat(q.get('scale'));
+    if (sc >= 40 && sc <= 120) state.printScaleMm = sc;
+    if (q.get('twin') === '1') state.isTwin = true;
+    var sc2 = q.get('scad');
+    if (sc2 === 'magicGem' || sc2 === 'ring') {
+      state.activeScadTab = sc2;
+      document.querySelectorAll('#scad-tabs .scad-tab').forEach(function (tb) {
+        tb.classList.toggle('active', tb.getAttribute('data-scad-tab') === sc2);
+      });
+    }
+    if (q.get('still') === '1') { state.autoRotate = false; state.still = true; }
+  }
+
   function bootStudio() {
+    applyUrlParams();
     initSection1Generator();
     wireStudioControls();
     syncControlsFromState();
+    var arBtn = document.getElementById('btn-gen-autorotate');
+    if (arBtn) arBtn.classList.toggle('active', state.autoRotate);
+    if (genControls) genControls.autoRotate = state.autoRotate;
     rebuildStudioScene();
     initSection2ReferenceModels();
     initSection3OpenSCAD();

@@ -3,16 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Magic Gems 3D Fabrication, STL &amp; Papercraft Studio — Companion to Paper C</title>
-  <!-- Google Fonts: Newsreader, Inter & JetBrains Mono -->
+  <title>Magic Gem Fabrication Studio — Companion to Paper C</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
-  <!-- KaTeX for inline & display math -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"
-    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
   <!-- Three.js + STLLoader + OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
@@ -24,1281 +18,367 @@
 
   <style>
     :root {
-      --bg: #faf9f5;
-      --surface: #ffffff;
-      --surface-alt: #f2f4f0;
-      --surface-warm: #fdfaf2;
-      --ink: #182022;
-      --ink-body: #283236;
-      --ink-muted: #5c696d;
-      --border: #dde2de;
-      --border-strong: #c2ccc6;
-
-      /* Semantic Distill Color Palette */
-      --emerald: #0f766e;
-      --emerald-light: #e6f6f4;
-      --cobalt: #1d4ed8;
-      --cobalt-light: #eff6ff;
-      --amber: #d97706;
-      --amber-light: #fef3c7;
-      --crimson: #e11d48;
-      --crimson-light: #ffe4e6;
-      --orange-hi: #d95f02;
-      --blue-lo: #0072b2;
-
-      --font-serif: 'Newsreader', 'Charter', 'Source Serif 4', 'Iowan Old Style', 'Georgia', serif;
+      --bg: #faf9f5; --surface: #ffffff; --surface-alt: #f2f4f0; --surface-warm: #fdfaf2;
+      --ink: #182022; --ink-body: #283236; --ink-muted: #5c696d;
+      --border: #dde2de; --border-strong: #c2ccc6;
+      --emerald: #0f766e; --emerald-light: #e6f6f4;
+      --font-serif: 'Newsreader', 'Charter', 'Iowan Old Style', 'Georgia', serif;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
     }
-
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink-body);
-      font-family: var(--font-serif);
-      font-size: 18px;
-      line-height: 1.68;
-      -webkit-font-smoothing: antialiased;
+      margin: 0; background: var(--bg); color: var(--ink-body);
+      font-family: var(--font-serif); font-size: 17px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
     }
+    button { font-family: var(--font-sans); }
 
-    /* Concept pills */
-    .c-pill {
-      display: inline-block;
-      font-family: var(--font-sans);
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.14rem 0.55rem;
-      border-radius: 5px;
-      vertical-align: middle;
-      line-height: 1.35;
-      white-space: nowrap;
-    }
-    .c-emerald { background: var(--emerald-light); color: #0b5852; border: 1px solid rgba(15,118,110,0.28); }
-    .c-cobalt  { background: var(--cobalt-light);  color: #1e40af; border: 1px solid rgba(29,78,216,0.25); }
-    .c-amber   { background: var(--amber-light);   color: #92400e; border: 1px solid rgba(217,119,6,0.32); }
-    .c-crimson { background: var(--crimson-light); color: #9f1239; border: 1px solid rgba(225,29,72,0.28); }
-
-    /* Hero Header */
-    header.distill-header {
+    /* Hero */
+    header.hero {
       background: radial-gradient(circle at 80% 20%, #1c4542 0%, #0f2528 60%, #091719 100%);
-      color: #f8faf9;
-      padding: 3.2rem 2rem 2.6rem;
-      border-bottom: 4px solid #2dd4bf;
-      position: relative;
-      overflow: hidden;
+      color: #f8faf9; padding: 1.6rem 1.5rem 2rem; border-bottom: 4px solid #2dd4bf;
     }
-    .header-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 2;
-    }
-    .top-nav-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.65rem;
-      margin-bottom: 1.35rem;
-      font-family: var(--font-sans);
-    }
+    .hero-inner { max-width: 1200px; margin: 0 auto; }
+    .nav-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.2rem; font-family: var(--font-sans); }
     .nav-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #e2f5f1;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 0.42rem 0.9rem;
-      border-radius: 999px;
-      text-decoration: none;
-      transition: all 0.18s ease;
+      font-size: 0.78rem; font-weight: 600; color: #e2f5f1; text-decoration: none;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.35rem 0.8rem; border-radius: 999px; transition: background .15s;
     }
-    .nav-pill:hover {
-      background: rgba(45, 212, 191, 0.22);
-      border-color: #5eead4;
-      color: #ffffff;
-      transform: translateY(-1px);
-    }
-    .nav-pill.primary {
-      background: rgba(45, 212, 191, 0.2);
-      border-color: rgba(94, 234, 212, 0.55);
-      color: #99f6e4;
-      font-weight: 700;
-    }
-    header.distill-header h1 {
-      font-family: var(--font-serif);
-      font-size: clamp(2.0rem, 3.8vw, 2.95rem);
-      line-height: 1.15;
-      font-weight: 700;
-      margin: 0 0 0.9rem 0;
-      letter-spacing: -0.02em;
-      color: #ffffff;
-    }
-    header.distill-header p.subtitle {
-      font-family: var(--font-sans);
-      font-size: 1.08rem;
-      line-height: 1.62;
-      color: #cbe3de;
-      max-width: 960px;
-      margin: 0 0 1.6rem 0;
-      font-weight: 400;
-    }
-    header.distill-header p.subtitle em {
-      color: #99f6e4;
-      font-style: italic;
-    }
-    .section-jump-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      padding-top: 1.15rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
-      font-family: var(--font-sans);
-      font-size: 0.83rem;
-    }
-    .jump-btn {
-      color: #ffffff;
-      text-decoration: none;
-      background: rgba(15, 118, 110, 0.45);
-      border: 1px solid rgba(94, 234, 212, 0.35);
-      padding: 0.42rem 0.9rem;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: all 0.16s ease;
-    }
-    .jump-btn:hover {
-      background: rgba(45, 212, 191, 0.28);
-      border-color: #5eead4;
-    }
+    .nav-pill:hover { background: rgba(45,212,191,0.22); border-color: #5eead4; }
+    .nav-pill.primary { background: rgba(45,212,191,0.2); border-color: rgba(94,234,212,0.55); color: #99f6e4; }
+    header.hero h1 { font-size: clamp(1.8rem, 3.6vw, 2.6rem); line-height: 1.15; margin: 0 0 0.5rem; letter-spacing: -0.02em; color: #fff; }
+    header.hero p { font-family: var(--font-sans); font-size: 1rem; color: #cbe3de; margin: 0; max-width: 900px; }
 
-    /* Main Container */
-    .studio-main {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 2.2rem 1.5rem 5rem;
-    }
+    /* Layout */
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+    section { margin-bottom: 3rem; }
+    .sec-header { margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+    .sec-header h2 { font-size: clamp(1.4rem, 2.4vw, 1.8rem); color: var(--ink); margin: 0; line-height: 1.25; }
+    .sec-header p { font-family: var(--font-sans); font-size: 0.9rem; color: var(--ink-muted); margin: 0.2rem 0 0; }
+    code { font-family: var(--font-mono); font-size: 0.85em; }
 
-    section.studio-section {
-      margin-bottom: 3.8rem;
-    }
-    .sec-header {
-      margin-bottom: 1.4rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0.75rem;
-    }
-    .sec-eyebrow {
-      font-family: var(--font-sans);
-      font-size: 0.76rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      color: var(--emerald);
-      margin-bottom: 0.25rem;
-    }
-    .sec-header h2 {
-      font-family: var(--font-serif);
-      font-size: clamp(1.55rem, 2.5vw, 2.1rem);
-      color: var(--ink);
-      margin: 0 0 0.4rem 0;
-      line-height: 1.25;
-    }
-    .sec-header p {
-      font-family: var(--font-sans);
-      font-size: 0.96rem;
-      color: var(--ink-muted);
-      margin: 0;
-      max-width: 960px;
-    }
-
-    /* Studio Card */
-    .studio-card {
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(15, 37, 40, 0.06);
-      overflow: hidden;
-    }
+    /* Studio card */
+    .studio-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 8px 24px rgba(15,37,40,0.06); overflow: hidden; }
     .studio-topbar {
-      background: linear-gradient(90deg, #0f2528 0%, #17383b 100%);
-      color: #f8faf9;
-      padding: 0.85rem 1.25rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      font-family: var(--font-sans);
+      background: linear-gradient(90deg, #0f2528, #17383b); color: #f8faf9; padding: 0.65rem 1.1rem;
+      font-family: var(--font-sans); font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 0.55rem;
     }
-    .studio-topbar-title {
-      font-weight: 700;
-      font-size: 0.96rem;
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-    }
-    .live-dot {
-      width: 9px;
-      height: 9px;
-      background: #2dd4bf;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #2dd4bf;
-      display: inline-block;
-    }
-    .studio-topbar-right {
-      font-size: 0.8rem;
-      color: #b7d4ce;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
+    .live-dot { flex: none; width: 9px; height: 9px; background: #2dd4bf; border-radius: 50%; box-shadow: 0 0 10px #2dd4bf; }
+    #gen-header-status { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* Flagship Presets Bar */
-    .preset-strip {
-      background: var(--surface-warm);
-      border-bottom: 1px solid var(--border);
-      padding: 0.8rem 1.2rem;
-      font-family: var(--font-sans);
-    }
-    .preset-strip-label {
-      font-size: 0.72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--ink-muted);
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .preset-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.48rem;
-    }
+    .preset-strip { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.7rem 1.1rem; background: var(--surface-warm); border-bottom: 1px solid var(--border); }
     .preset-btn {
-      font-family: var(--font-sans);
-      font-size: 0.79rem;
-      font-weight: 600;
-      padding: 0.42rem 0.78rem;
-      border-radius: 8px;
-      border: 1px solid var(--border-strong);
-      background: var(--surface);
-      color: var(--ink-body);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
+      font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.7rem; border-radius: 7px; white-space: nowrap;
+      border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink-body); cursor: pointer; transition: all .15s;
     }
-    .preset-btn:hover {
-      border-color: var(--emerald);
-      background: var(--emerald-light);
-      color: #0b5852;
-    }
-    .preset-btn.active {
-      background: var(--emerald);
-      color: #ffffff;
-      border-color: var(--emerald);
-      box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
-    }
-    .preset-btn.twin-toggle {
-      border-color: rgba(217, 119, 6, 0.45);
-      background: #fffbeb;
-      color: #92400e;
-      font-weight: 700;
-    }
-    .preset-btn.twin-toggle.active {
-      background: var(--amber);
-      color: #ffffff;
-      border-color: var(--amber);
-    }
+    .preset-btn:hover { border-color: var(--emerald); background: var(--emerald-light); color: #0b5852; }
+    .preset-btn.active { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+    .preset-btn.twin-toggle { margin-left: auto; border-color: rgba(217,119,6,0.45); background: #fffbeb; color: #92400e; }
+    .preset-btn.twin-toggle.active { background: #d97706; color: #fff; border-color: #d97706; }
 
-    /* Architecture Mode Tabs */
-    .arch-tabs {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      background: var(--surface-alt);
-      border-bottom: 1px solid var(--border);
-      font-family: var(--font-sans);
-    }
-    @media (max-width: 1080px) {
-      .arch-tabs { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 640px) {
-      .arch-tabs { grid-template-columns: repeat(2, 1fr); }
-    }
+    .arch-tabs { display: grid; grid-template-columns: repeat(6, 1fr); background: var(--surface-alt); border-bottom: 1px solid var(--border); }
     .arch-tab {
-      padding: 0.72rem 0.65rem;
-      border: none;
-      border-right: 1px solid var(--border);
-      border-bottom: 3px solid transparent;
-      background: transparent;
-      font-family: var(--font-sans);
-      font-size: 0.79rem;
-      font-weight: 600;
-      color: var(--ink-muted);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.18rem;
+      padding: 0.6rem 0.3rem; border: none; border-right: 1px solid var(--border); border-bottom: 3px solid transparent; background: transparent;
+      font-size: 0.8rem; font-weight: 600; color: var(--ink-muted); cursor: pointer; white-space: nowrap; transition: all .15s;
     }
     .arch-tab:last-child { border-right: none; }
-    .arch-tab:hover {
-      background: rgba(15, 118, 110, 0.06);
-      color: var(--ink);
-    }
-    .arch-tab.active {
-      background: var(--surface);
-      color: var(--emerald);
-      border-bottom-color: var(--emerald);
-      font-weight: 700;
-    }
-    .arch-tab .tab-num {
-      font-size: 0.67rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--amber);
-      font-weight: 800;
-    }
+    .arch-tab:hover { background: rgba(15,118,110,0.06); color: var(--ink); }
+    .arch-tab.active { background: var(--surface); color: var(--emerald); border-bottom-color: var(--emerald); font-weight: 700; }
 
-    /* Controls Grid */
-    .studio-controls {
-      padding: 0.95rem 1.25rem;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.15rem;
-      align-items: center;
-      font-family: var(--font-sans);
-      font-size: 0.83rem;
-    }
-    .ctrl-block {
-      display: flex;
-      flex-direction: column;
-      gap: 0.28rem;
-    }
-    .ctrl-block label {
-      font-weight: 700;
-      font-size: 0.74rem;
-      color: var(--ink-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .ctrl-row {
-      display: flex;
-      align-items: center;
-      gap: 0.42rem;
-      flex-wrap: wrap;
-    }
-    .sq-input {
-      width: 74px;
-      padding: 0.36rem 0.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.88rem;
-      font-weight: 700;
-      border: 1px solid var(--border-strong);
-      border-radius: 6px;
-      color: var(--ink);
-      text-align: center;
-    }
+    /* Controls */
+    .studio-controls { padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--border); font-family: var(--font-sans); font-size: 0.82rem; }
+    .ctrl-main { display: flex; flex-wrap: wrap; gap: 0.8rem 1.6rem; align-items: flex-end; }
+    .ctrl-block { display: flex; flex-direction: column; gap: 0.25rem; }
+    .ctrl-block > label, .ctrl-label { font-weight: 700; font-size: 0.7rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .ctrl-block label { line-height: 1.3; }
+    .ctrl-block strong { color: var(--emerald); font-family: var(--font-mono); font-size: 0.74rem; text-transform: none; letter-spacing: 0; margin-left: 0.3rem; }
+    .ctrl-row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+    .sq-input { width: 66px; padding: 0.3rem 0.4rem; font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; border: 1px solid var(--border-strong); border-radius: 6px; color: var(--ink); text-align: center; }
     .mini-btn {
-      font-family: var(--font-sans);
-      font-size: 0.76rem;
-      font-weight: 600;
-      padding: 0.34rem 0.62rem;
-      border-radius: 6px;
-      border: 1px solid var(--border-strong);
-      background: var(--surface-alt);
-      color: var(--ink-body);
-      cursor: pointer;
-      transition: all 0.14s;
+      font-size: 0.76rem; font-weight: 600; padding: 0.3rem 0.6rem; border-radius: 6px; white-space: nowrap;
+      border: 1px solid var(--border-strong); background: var(--surface-alt); color: var(--ink-body); cursor: pointer; transition: all .14s;
     }
-    .mini-btn:hover {
-      background: var(--emerald-light);
-      border-color: var(--emerald);
-      color: #0b5852;
-    }
-    .mini-btn.active {
-      background: var(--emerald);
-      color: #ffffff;
-      border-color: var(--emerald);
-    }
-    input[type="range"] {
-      accent-color: var(--emerald);
-      cursor: pointer;
-    }
+    .mini-btn:hover { background: var(--emerald-light); border-color: var(--emerald); color: #0b5852; }
+    .mini-btn.active { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+    input[type="range"] { accent-color: var(--emerald); cursor: pointer; width: 150px; max-width: 100%; }
+    details.adv { margin-top: 0.7rem; }
+    details.adv summary { cursor: pointer; font-weight: 700; font-size: 0.74rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    details.adv .adv-body { display: flex; flex-wrap: wrap; gap: 0.8rem 1.6rem; align-items: flex-end; padding-top: 0.65rem; }
 
-    /* Main Workspace Split: Left 3D/2D Viewport + Right Mechanical Readout & Export */
-    .studio-workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 1.38fr) minmax(350px, 0.92fr);
-      min-height: 560px;
+    /* Workspace */
+    .studio-workspace { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); }
+    .viewport-col { position: relative; background: #0d1f22; border-right: 1px solid var(--border); min-width: 0; }
+    .viewport-stage { display: flex; height: 100%; min-height: 480px; }
+    #gen-3d-container { flex: 1 1 0; min-width: 0; min-height: 480px; position: relative; overflow: hidden; }
+    #gen-3d-container canvas { display: block; }
+    #gen-net-container { flex: 1.2 1 0; min-width: 0; background: #fff; border-left: 1px solid var(--border); display: none; align-items: center; justify-content: center; }
+    #gen-net-canvas { width: 100%; height: auto; display: block; }
+    .icon-row { position: absolute; top: 10px; right: 10px; z-index: 5; display: flex; gap: 0.3rem; }
+    .icon-btn {
+      width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+      background: rgba(9,23,25,0.7); border: 1px solid rgba(255,255,255,0.22); color: #e2f5f1; border-radius: 6px;
+      font-size: 0.95rem; cursor: pointer; transition: all .14s;
     }
-    @media (max-width: 1024px) {
-      .studio-workspace {
-        grid-template-columns: 1fr;
-      }
-    }
+    .icon-btn:hover { background: rgba(45,212,191,0.3); border-color: #5eead4; }
+    .icon-btn.active { background: #0f766e; border-color: #2dd4bf; color: #fff; }
 
-    .viewport-col {
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--border);
-      background: #0d1f22;
-      position: relative;
+    /* Readout column */
+    .readout-col { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 1rem; font-family: var(--font-sans); min-width: 0; }
+    .export-box { display: flex; flex-direction: column; gap: 0.45rem; }
+    .btn-primary {
+      width: 100%; padding: 0.7rem 1rem; border-radius: 8px; border: none; color: #fff; cursor: pointer;
+      background: linear-gradient(135deg, #0f766e, #0d9488); font-size: 0.92rem; font-weight: 700;
+      box-shadow: 0 3px 10px rgba(15,118,110,0.25); transition: all .16s;
     }
-    .viewport-stage {
-      position: relative;
-      flex: 1;
-      min-height: 460px;
-      width: 100%;
-      display: flex;
+    .btn-primary:hover { background: linear-gradient(135deg, #115e59, #0f766e); transform: translateY(-1px); }
+    .dl-caption { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-muted); text-align: center; overflow-wrap: anywhere; }
+    .btn-row { display: flex; gap: 0.45rem; }
+    .btn-sec {
+      flex: 1; padding: 0.42rem 0.5rem; border-radius: 7px; border: 1px solid var(--border-strong); background: #fff;
+      color: var(--ink-body); font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s;
     }
-    #gen-3d-container {
-      flex: 1;
-      min-height: 460px;
-      position: relative;
-      overflow: hidden;
-    }
-    #gen-net-container {
-      flex: 1.15;
-      min-height: 460px;
-      background: #ffffff;
-      border-left: 1px solid var(--border);
-      position: relative;
-      display: none;
-      flex-direction: column;
-    }
-    #gen-net-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .viewport-overlay-badges {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      display: flex;
-      justify-content: space-between;
-      pointer-events: none;
-      z-index: 5;
-      font-family: var(--font-sans);
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .v-badge {
-      background: rgba(9, 23, 25, 0.82);
-      backdrop-filter: blur(6px);
-      color: #e6f6f4;
-      border: 1px solid rgba(94, 234, 212, 0.35);
-      padding: 0.3rem 0.68rem;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 600;
-    }
-    .viewport-toolbar {
-      background: #12292d;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 0.65rem 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.6rem;
-      font-family: var(--font-sans);
-      font-size: 0.78rem;
-      color: #b7d4ce;
-    }
-    .vt-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .vt-btn {
-      background: rgba(255, 255, 255, 0.09);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #e2f5f1;
-      padding: 0.32rem 0.65rem;
-      border-radius: 6px;
-      font-family: var(--font-sans);
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.14s;
-    }
-    .vt-btn:hover {
-      background: rgba(45, 212, 191, 0.22);
-      border-color: #5eead4;
-    }
-    .vt-btn.active {
-      background: #0f766e;
-      border-color: #2dd4bf;
-      color: #ffffff;
-    }
+    .btn-sec:hover { background: var(--emerald-light); border-color: var(--emerald); color: #0b5852; }
 
-    /* Right Column: Live Mechanical Readout & STL/SVG Export */
-    .readout-col {
-      padding: 1.15rem 1.25rem;
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      font-family: var(--font-sans);
-    }
-    .export-box {
-      background: linear-gradient(135deg, #f0fdfa 0%, #fef3c7 100%);
-      border: 1.5px solid rgba(15, 118, 110, 0.35);
-      border-radius: 10px;
-      padding: 0.9rem 1rem;
-    }
-    .export-title {
-      font-size: 0.74rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #0b5852;
-      margin-bottom: 0.55rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .export-btn-primary {
-      width: 100%;
-      padding: 0.68rem 1rem;
-      border-radius: 8px;
-      border: none;
-      background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
-      color: #ffffff;
-      font-family: var(--font-sans);
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
-      transition: all 0.16s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-    }
-    .export-btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15, 118, 110, 0.38);
-      background: linear-gradient(135deg, #115e59 0%, #0f766e 100%);
-    }
-    .export-sub-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-top: 0.5rem;
-    }
-    .export-btn-sec {
-      flex: 1;
-      min-width: 140px;
-      padding: 0.48rem 0.65rem;
-      border-radius: 7px;
-      border: 1px solid rgba(217, 119, 6, 0.45);
-      background: #ffffff;
-      color: #92400e;
-      font-family: var(--font-sans);
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s;
-      text-align: center;
-    }
-    .export-btn-sec:hover {
-      background: var(--amber-light);
-      border-color: var(--amber);
-    }
+    table.readout { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    table.readout th, table.readout td { padding: 0.38rem 0; border-bottom: 1px solid var(--border); vertical-align: baseline; }
+    table.readout th { text-align: left; font-weight: 600; color: var(--ink-muted); white-space: nowrap; padding-right: 0.8rem; width: 1%; }
+    table.readout td { text-align: right; white-space: nowrap; font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
 
-    /* 4x4 Matrix & Readout Table */
-    .matrix-and-stats {
-      display: grid;
-      grid-template-columns: 158px 1fr;
-      gap: 0.9rem;
-      align-items: start;
-    }
-    @media (max-width: 520px) {
-      .matrix-and-stats { grid-template-columns: 1fr; }
-    }
-    .sq-grid-box {
-      background: var(--surface-alt);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 0.55rem;
-    }
-    .sq-grid-title {
-      font-size: 0.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--ink-muted);
-      margin-bottom: 0.4rem;
-      text-align: center;
-    }
-    .sq-grid-4x4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 3px;
-    }
+    .matrix-box { display: flex; gap: 0.9rem; align-items: center; }
+    .sq-grid-4x4 { display: grid; grid-template-columns: repeat(4, 38px); gap: 3px; flex: none; }
     .sq-cell {
-      aspect-ratio: 1;
-      border-radius: 5px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      font-weight: 700;
-      line-height: 1.05;
-      border: 1.5px solid transparent;
-      position: relative;
+      width: 38px; height: 38px; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; line-height: 1.05; border: 1.5px solid transparent;
     }
-    .sq-cell .z-sub {
-      font-size: 0.54rem;
-      font-weight: 500;
-      opacity: 0.82;
-    }
-    .sq-cell.v-outer {
-      background: #e0f2fe;
-      border-color: #0284c7;
-      color: #0c4a6e;
-    }
-    .sq-cell.v-face {
-      background: #ede9fe;
-      border-color: #7c3aed;
-      color: #4c1d95;
-    }
-    .sq-cell.v-int {
-      background: #fef3c7;
-      border-color: #d97706;
-      color: #78350f;
-    }
-    .sq-legend {
-      margin-top: 0.42rem;
-      font-size: 0.65rem;
-      color: var(--ink-muted);
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-    .sq-legend span {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .dot-sw {
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
-      display: inline-block;
-    }
+    .sq-cell .z-sub { font-size: 0.54rem; font-weight: 500; opacity: 0.8; }
+    .sq-cell.v-outer { background: #e0f2fe; border-color: #0284c7; color: #0c4a6e; }
+    .sq-cell.v-face  { background: #ede9fe; border-color: #7c3aed; color: #4c1d95; }
+    .sq-cell.v-int   { background: #fef3c7; border-color: #d97706; color: #78350f; }
+    .sq-legend { display: grid; grid-template-columns: 10px auto; column-gap: 0.45rem; row-gap: 0.3rem; align-items: center; font-size: 0.75rem; color: var(--ink-muted); }
+    .sq-legend b { color: var(--ink); font-family: var(--font-mono); }
+    .dot-sw { width: 10px; height: 10px; border-radius: 2px; }
 
-    .mech-stats-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.42rem;
-      font-size: 0.8rem;
-    }
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 0.32rem 0.55rem;
-      background: var(--surface-alt);
-      border-radius: 6px;
-      border-left: 3px solid var(--emerald);
-      gap: 0.5rem;
-    }
-    .stat-row.amber { border-left-color: var(--amber); }
-    .stat-row.cobalt { border-left-color: var(--cobalt); }
-    .stat-row .s-lbl {
-      color: var(--ink-muted);
-      font-weight: 600;
-      font-size: 0.75rem;
-    }
-    .stat-row .s-val {
-      font-family: var(--font-mono);
-      font-weight: 700;
-      color: var(--ink);
-      font-size: 0.77rem;
-      text-align: right;
-    }
+    /* Reference cards */
+    .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
+    .ref-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 3px 12px rgba(15,37,40,0.05); }
+    .ref-card-head { padding: 0.7rem 0.9rem 0.6rem; background: var(--surface-warm); border-bottom: 1px solid var(--border); font-family: var(--font-sans); }
+    .ref-card-head h3 { font-family: var(--font-serif); font-size: 1.05rem; margin: 0; color: var(--ink); }
+    .ref-card-head p { font-size: 0.76rem; color: var(--ink-muted); margin: 0.1rem 0 0; }
+    .ref-viewer-wrap { position: relative; width: 100%; aspect-ratio: 420 / 290; background: radial-gradient(circle at 50% 35%, #19383c, #0d1f22); }
+    .ref-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+    .ref-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #99f6e4; font-family: var(--font-sans); font-size: 0.8rem; pointer-events: none; }
+    .ref-card-foot { padding: 0.6rem 0.9rem; display: flex; gap: 0.45rem; border-top: 1px solid var(--border); }
+    .ref-card-foot .btn-sec, .ref-card-foot .dl-link { flex: 1; text-align: center; text-decoration: none; }
+    .dl-link { padding: 0.42rem 0.5rem; border-radius: 7px; background: var(--emerald); color: #fff; font-family: var(--font-sans); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+    .dl-link:hover { background: #115e59; }
 
-    .arch-note-box {
-      background: var(--surface-warm);
-      border: 1px solid rgba(217, 119, 6, 0.35);
-      border-radius: 8px;
-      padding: 0.68rem 0.85rem;
-      font-size: 0.79rem;
-      line-height: 1.5;
-      color: var(--ink-body);
+    /* OpenSCAD */
+    .scad-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(15,37,40,0.06); }
+    .scad-tabs-bar { background: #13282b; padding: 0.6rem 1rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.6rem; font-family: var(--font-sans); }
+    .scad-tabs, .scad-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .scad-tab, .scad-act-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #cbe3de; padding: 0.38rem 0.8rem;
+      border-radius: 7px; font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s;
     }
-    .arch-note-box strong { color: #92400e; }
+    .scad-tab:hover, .scad-act-btn:hover { background: rgba(45,212,191,0.2); color: #fff; }
+    .scad-tab.active { background: #2dd4bf; color: #091719; border-color: #2dd4bf; font-weight: 700; }
+    .scad-code-wrap { max-height: 460px; overflow: auto; background: #1d1f21; }
+    .scad-code-wrap pre { margin: 0 !important; padding: 1.1rem !important; font-family: var(--font-mono) !important; font-size: 0.8rem !important; line-height: 1.5 !important; }
 
-    /* Section 2: Curated Reference STL Models Grid */
-    .ref-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
-      gap: 1.5rem;
-    }
-    @media (max-width: 480px) {
-      .ref-grid { grid-template-columns: 1fr; }
-    }
-    .ref-card {
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(15, 37, 40, 0.05);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-    .ref-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 26px rgba(15, 37, 40, 0.1);
-    }
-    .ref-card-head {
-      padding: 0.95rem 1.15rem 0.75rem;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface-warm);
-    }
-    .ref-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 0.45rem;
-    }
-    .ref-card-head h3 {
-      font-family: var(--font-serif);
-      font-size: 1.18rem;
-      margin: 0 0 0.3rem 0;
-      color: var(--ink);
-    }
-    .ref-card-head p {
-      font-family: var(--font-sans);
-      font-size: 0.81rem;
-      color: var(--ink-muted);
-      margin: 0;
-      line-height: 1.45;
-    }
-    .ref-viewer-wrap {
-      position: relative;
-      width: 100%;
-      height: 290px;
-      background: radial-gradient(circle at 50% 35%, #19383c 0%, #0d1f22 100%);
-      overflow: hidden;
-    }
-    .ref-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      cursor: grab;
-    }
-    .ref-canvas:active { cursor: grabbing; }
-    .ref-loading {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #99f6e4;
-      font-family: var(--font-sans);
-      font-size: 0.85rem;
-      font-weight: 600;
-      pointer-events: none;
-    }
-    .ref-card-foot {
-      padding: 0.7rem 1rem;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: var(--font-sans);
-    }
-    .ref-tool-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-    .dl-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: var(--emerald);
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.38rem 0.8rem;
-      border-radius: 7px;
-      transition: background 0.15s;
-    }
-    .dl-pill:hover { background: #115e59; }
+    footer.site-footer { background: #0f2528; color: #cbe3de; padding: 1.6rem 1.5rem; font-family: var(--font-sans); font-size: 0.82rem; line-height: 1.6; border-top: 3px solid #2dd4bf; }
+    footer.site-footer .inner { max-width: 1200px; margin: 0 auto; }
+    footer.site-footer a { color: #5eead4; text-decoration: none; }
+    footer.site-footer a:hover { text-decoration: underline; }
 
-    /* Download All Bar */
-    .dl-all-bar {
-      margin-top: 1.5rem;
-      background: var(--surface-warm);
-      border: 1px solid var(--border-strong);
-      border-radius: 12px;
-      padding: 1.1rem 1.4rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      font-family: var(--font-sans);
+    @media (max-width: 1024px) {
+      .studio-workspace { grid-template-columns: 1fr; }
+      .viewport-col { border-right: none; border-bottom: 1px solid var(--border); }
     }
-    .dl-all-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
+    @media (max-width: 720px) {
+      body { font-size: 16px; }
+      main { padding: 1.4rem 0.9rem 2rem; }
+      .arch-tabs { grid-template-columns: repeat(3, 1fr); }
+      .arch-tab { border-bottom: 1px solid var(--border); }
+      .arch-tab.active { border-bottom: 3px solid var(--emerald); }
+      .viewport-stage { min-height: 320px; flex-direction: column; }
+      #gen-3d-container { min-height: 320px; }
+      #gen-net-container { border-left: none; border-top: 1px solid var(--border); }
+      .preset-btn.twin-toggle { margin-left: 0; }
+      #gen-header-status { white-space: normal; font-size: 0.85rem; line-height: 1.35; }
+      .scad-code-wrap { max-height: 360px; }
     }
-
-    /* Section 3: OpenSCAD Code Studio */
-    .scad-card {
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(15, 37, 40, 0.06);
-    }
-    .scad-tabs-bar {
-      background: #13282b;
-      padding: 0.65rem 1.1rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      font-family: var(--font-sans);
-    }
-    .scad-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-    }
-    .scad-tab {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #cbe3de;
-      padding: 0.45rem 0.9rem;
-      border-radius: 8px;
-      font-family: var(--font-sans);
-      font-size: 0.81rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .scad-tab:hover {
-      background: rgba(45, 212, 191, 0.18);
-      color: #ffffff;
-    }
-    .scad-tab.active {
-      background: #2dd4bf;
-      color: #091719;
-      border-color: #2dd4bf;
-      font-weight: 700;
-    }
-    .scad-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .scad-act-btn {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-      padding: 0.42rem 0.85rem;
-      border-radius: 7px;
-      font-family: var(--font-sans);
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .scad-act-btn:hover {
-      background: #0f766e;
-      border-color: #5eead4;
-    }
-    .scad-code-wrap {
-      max-height: 520px;
-      overflow-y: auto;
-      background: #1d1f21;
-    }
-    .scad-code-wrap pre {
-      margin: 0 !important;
-      padding: 1.25rem !important;
-      font-family: var(--font-mono) !important;
-      font-size: 0.83rem !important;
-      line-height: 1.55 !important;
-    }
-
-    footer.distill-footer {
-      background: #0f2528;
-      color: #cbe3de;
-      padding: 2.5rem 1.5rem;
-      font-family: var(--font-sans);
-      font-size: 0.85rem;
-      line-height: 1.6;
-      border-top: 3px solid #2dd4bf;
-    }
-    .footer-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    footer.distill-footer a {
-      color: #5eead4;
-      text-decoration: none;
-    }
-    footer.distill-footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
-<header class="distill-header">
-  <div class="header-container">
-    <nav class="top-nav-pills" aria-label="Cross-Repository Navigation">
-      <a class="nav-pill primary" href="../index.html">← Back to Paper C Interactive Essay</a>
-      <a class="nav-pill" href="../paperC.pdf" target="_blank" rel="noopener">📄 Read Paper C PDF</a>
-      <a class="nav-pill" href="https://kylemath.github.io/MagicGemWebpage/" target="_blank" rel="noopener">💎 880-Gem 3D Crystal Explorer ↗</a>
-      <a class="nav-pill" href="https://github.com/kylemath/magicGem" target="_blank" rel="noopener">💻 GitHub Repository ↗</a>
+<header class="hero">
+  <div class="hero-inner">
+    <nav class="nav-pills" aria-label="Navigation">
+      <a class="nav-pill primary" href="../index.html">← Paper C essay</a>
+      <a class="nav-pill" href="../paperC.pdf" target="_blank" rel="noopener">Paper PDF</a>
+      <a class="nav-pill" href="https://kylemath.github.io/MagicGemWebpage/" target="_blank" rel="noopener">880-Gem Explorer ↗</a>
+      <a class="nav-pill" href="https://github.com/kylemath/magicGem" target="_blank" rel="noopener">GitHub ↗</a>
     </nav>
-
-    <h1>Magic Gems 3D Fabrication, STL &amp; Papercraft Studio</h1>
-    <p class="subtitle">
-      <em>Companion fabrication suite for &ldquo;Balance in Inequality: Testing the Physical Equilibrium, Precession, and Structural Stability of Magic Gems&rdquo; — Interactive STL mesh generator for all 880 order-four magic squares, curated reference models, unfolded papercraft cutout nets, and parametric OpenSCAD scripts.</em>
-    </p>
-
-    <div class="section-jump-bar">
-      <a class="jump-btn" href="#sec-generator">1. Live 880-Gem STL &amp; Papercraft Generator ↓</a>
-      <a class="jump-btn" href="#sec-reference">2. Curated Reference STL Models (v1–v7 &amp; Ring) ↓</a>
-      <a class="jump-btn" href="#sec-openscad">3. Parametric OpenSCAD Code Studio (.scad) ↓</a>
-    </div>
+    <h1>Magic Gem Fabrication Studio</h1>
+    <p>STL meshes, papercraft nets and OpenSCAD scripts for all 880 order-four magic squares.</p>
   </div>
 </header>
 
-<main class="studio-main">
+<main>
 
-  <!-- ===================================================================== -->
-  <!-- SECTION 1: LIVE ON-DEMAND 3D STL, OPENSCAD & PAPERCRAFT GENERATOR      -->
-  <!-- ===================================================================== -->
-  <section class="studio-section" id="sec-generator">
-    <div class="sec-header">
-      <div class="sec-eyebrow">Section 1 · Interactive CAD, Mesh &amp; Unfolding Engine</div>
-      <h2>Live On-Demand 3D STL, OpenSCAD &amp; Papercraft Net Generator (All 880 Order-4 Magic Squares)</h2>
-      <p>
-        Select any of the $880$ Frénicle order-four magic squares (or its central-inversion Mirror Twin $S^* = r^2\overline{S}$), adjust the vertical lift scale $\lambda \in [0.10, 1.00]$, physical footprint ($40\text{–}120\text{ mm}$), and strut gauge ($1.5\text{–}4.0\text{ mm}$), and export watertight binary/ASCII <code>.stl</code> meshes, printable 2D <code>.svg</code> papercraft nets, or standalone <code>.scad</code> scripts.
-      </p>
-    </div>
+  <!-- ============ STUDIO ============ -->
+  <section id="sec-generator">
+    <div class="sec-header"><h2>Studio</h2></div>
 
     <div class="studio-card">
-      <div class="studio-topbar">
-        <div class="studio-topbar-title">
-          <span class="live-dot"></span>
-          <span id="gen-header-status">Frénicle Square #175 (Dürer · Group III Associative) — Solid Convex Hull $\mathcal{G}_\lambda(S)$</span>
-        </div>
-        <div class="studio-topbar-right">
-          <span>Exact Integer Convex Hull ($V - E + F = 2$)</span>
-          <span>·</span>
-          <span>Units: Millimeters (mm)</span>
-        </div>
+      <div class="studio-topbar"><span class="live-dot"></span><span id="gen-header-status">#175 · Group III · Solid hull</span></div>
+
+      <div class="preset-strip" id="flagship-presets">
+        <button class="preset-btn active" data-preset="175" data-arch="solid" data-lam="0.20" title="Dürer's square (Group III, associative)">#175 Dürer</button>
+        <button class="preset-btn" data-preset="70" data-arch="radial" data-lam="0.20" title="Pell minimum, v/u = 9/4 (Group VI)">#70 Pell</button>
+        <button class="preset-btn" data-preset="45" data-arch="dual" data-lam="0.20" title="#45 / #54 sibling core pair">#45 / #54</button>
+        <button class="preset-btn" data-preset="46" data-arch="solid" data-lam="0.2425" title="Maximal Dzhanibekov flip, |Q_xy| = 60">#46 Flip</button>
+        <button class="preset-btn" data-preset="673" data-arch="dual" data-lam="0.20" title="Diamond-in-a-diamond, Δρ₁/ρ₀ = 5/4">#673 Diamond</button>
+        <button class="preset-btn" data-preset="763" data-arch="solid" data-lam="0.20" title="Chiral knight's-move tower">#763 Tower</button>
+        <button class="preset-btn twin-toggle" id="btn-mirror-twin" title="Mirror twin S* = r²(17 − S): reverses the centroid and spin">⇄ Twin: off</button>
       </div>
 
-      <!-- 6 Flagship Presets + Mirror Twin Toggle -->
-      <div class="preset-strip">
-        <div class="preset-strip-label">
-          <span>Paper C Flagship Exemplars &amp; Mirror-Twin Inversion Toggle</span>
-          <span style="font-weight:600; color:var(--emerald);">Click any preset to configure its canonical Paper C architecture</span>
-        </div>
-        <div class="preset-btns" id="flagship-presets">
-          <button class="preset-btn active" data-preset="175" data-arch="solid" data-lam="0.20">
-            #175 Dürer (Group III, Associative)
-          </button>
-          <button class="preset-btn" data-preset="70" data-arch="radial" data-lam="0.20">
-            #70 Pell Minimum (Group VI, $v/u=9/4$)
-          </button>
-          <button class="preset-btn" data-preset="45" data-arch="dual" data-lam="0.20" id="btn-preset-sibling">
-            #45 / #54 Sibling Core Pair
-          </button>
-          <button class="preset-btn" data-preset="46" data-arch="solid" data-lam="0.2425">
-            #46 Max Dzhanibekov Flip ($|Q_{xy}|=60$)
-          </button>
-          <button class="preset-btn" data-preset="673" data-arch="dual" data-lam="0.20">
-            #673 Diamond-in-a-Diamond ($\Delta\rho_1/\rho_0=5/4$)
-          </button>
-          <button class="preset-btn" data-preset="763" data-arch="solid" data-lam="0.20">
-            #763 Chiral Knight's-Move Tower
-          </button>
-          <button class="preset-btn twin-toggle" id="btn-mirror-twin" title="Invert square via S* = r²(17 - S) so G_λ(S*) = -G_λ(S)">
-            ⇄ Mirror Twin $S^* = r^2\overline{S}$: OFF
-          </button>
-        </div>
-      </div>
-
-      <!-- 6 Fabrication Architecture Modes -->
       <div class="arch-tabs" id="arch-tabs">
-        <button class="arch-tab active" data-arch="solid">
-          <span class="tab-num">Mode 1 · §§3–5</span>
-          <span>Solid Convex Hull $\mathcal{G}_\lambda(S)$</span>
-        </button>
-        <button class="arch-tab" data-arch="dual">
-          <span class="tab-num">Mode 2 · §4 Thm 4.3</span>
-          <span>Dual &ldquo;Diamond-in-a-Diamond&rdquo;</span>
-        </button>
-        <button class="arch-tab" data-arch="wireframe">
-          <span class="tab-num">Mode 3 · §4 Thm 4.4</span>
-          <span>Nested Ball-&amp;-Rod Wireframe</span>
-        </button>
-        <button class="arch-tab" data-arch="k16">
-          <span class="tab-num">Mode 4 · §4 Thm 4.4</span>
-          <span>Complete $K_{16}$ (120 Rods)</span>
-        </button>
-        <button class="arch-tab" data-arch="radial">
-          <span class="tab-num">Mode 5 · §2 Thm 2.1</span>
-          <span>16-Spoke Radial Hub Star</span>
-        </button>
-        <button class="arch-tab" data-arch="papercraft">
-          <span class="tab-num">Mode 6 · §4 Prop 4.5</span>
-          <span>2D Unfolded Papercraft Net</span>
-        </button>
+        <button class="arch-tab active" data-arch="solid" title="Solid convex hull">Solid</button>
+        <button class="arch-tab" data-arch="dual" title="Dual-density diamond-in-a-diamond">Dual</button>
+        <button class="arch-tab" data-arch="wireframe" title="Nested ball-and-rod wireframe">Wireframe</button>
+        <button class="arch-tab" data-arch="k16" title="Complete K₁₆ (120 rods)">K₁₆</button>
+        <button class="arch-tab" data-arch="radial" title="16-spoke radial hub star">Radial</button>
+        <button class="arch-tab" data-arch="papercraft" title="Unfolded papercraft net">Net</button>
       </div>
 
-      <!-- Parametric Controls Bar -->
       <div class="studio-controls">
-        <!-- Square #1..880 -->
-        <div class="ctrl-block">
-          <label for="gen-sq-input">Frénicle Square (#1–#880)</label>
-          <div class="ctrl-row">
-            <button class="mini-btn" id="btn-sq-prev" title="Previous square">◀</button>
-            <input type="number" id="gen-sq-input" class="sq-input" min="1" max="880" value="175" />
-            <button class="mini-btn" id="btn-sq-next" title="Next square">▶</button>
-            <button class="mini-btn" id="btn-sq-rand" title="Pick random square from 1..880">🎲 Random</button>
-            <button class="mini-btn" id="btn-sq-54" title="Switch between #45 (denser core) and #54 (hollow cavity)">#54 Cavity</button>
+        <div class="ctrl-main">
+          <div class="ctrl-block">
+            <label for="gen-sq-input">Square (1–880)</label>
+            <div class="ctrl-row">
+              <button class="mini-btn" id="btn-sq-prev" title="Previous square">◀</button>
+              <input type="number" id="gen-sq-input" class="sq-input" min="1" max="880" value="175" />
+              <button class="mini-btn" id="btn-sq-next" title="Next square">▶</button>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <label for="gen-lam-slider">Lift <strong id="gen-lam-val">λ = 0.2000</strong></label>
+            <div class="ctrl-row">
+              <input type="range" id="gen-lam-slider" min="0.10" max="1.00" step="0.0025" value="0.20" />
+              <button class="mini-btn active" data-lam-preset="0.20" title="λ = 0.20 (cube-like)">0.20</button>
+              <button class="mini-btn" data-lam-preset="0.2425" title="λ = 1/√17 (isotropic)">1/√17</button>
+              <button class="mini-btn" data-lam-preset="1.00" title="λ = 1.00">1.00</button>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <label for="gen-scale-slider">Footprint <strong id="gen-scale-val">60 mm</strong></label>
+            <input type="range" id="gen-scale-slider" min="40" max="120" step="5" value="60" />
           </div>
         </div>
-
-        <!-- Lift Scale lambda -->
-        <div class="ctrl-block">
-          <label for="gen-lam-slider">Vertical Lift Scale $\lambda$: <strong id="gen-lam-val" style="color:var(--emerald);">0.2000</strong></label>
-          <div class="ctrl-row">
-            <input type="range" id="gen-lam-slider" min="0.10" max="1.00" step="0.0025" value="0.20" style="width:135px;" />
-            <button class="mini-btn active" data-lam-preset="0.20">$\lambda_{\mathrm{cube}}=0.20$</button>
-            <button class="mini-btn" data-lam-preset="0.2425">$\lambda_{\mathrm{iso}}=1/\sqrt{17}$</button>
-            <button class="mini-btn" data-lam-preset="1.00">$\lambda=1.00$</button>
+        <details class="adv">
+          <summary>Advanced</summary>
+          <div class="adv-body">
+            <div class="ctrl-block">
+              <label for="gen-strut-slider">Strut gauge <strong id="gen-strut-val">2.4 mm</strong></label>
+              <input type="range" id="gen-strut-slider" min="1.5" max="4.0" step="0.1" value="2.4" />
+            </div>
+            <div class="ctrl-block">
+              <span class="ctrl-label">Pick square</span>
+              <div class="ctrl-row">
+                <button class="mini-btn" id="btn-sq-rand" title="Random square from 1–880">Random</button>
+                <button class="mini-btn" id="btn-sq-54" title="Switch between #45 (denser core) and #54 (hollow cavity)">#54 twin</button>
+              </div>
+            </div>
+            <div class="ctrl-block" id="mode-subctrl-wrap" style="display:none;">
+              <span class="ctrl-label" id="mode-subctrl-label">Option</span>
+              <div class="ctrl-row" id="mode-subctrl-row"></div>
+            </div>
           </div>
-        </div>
-
-        <!-- Physical Print Footprint (mm) -->
-        <div class="ctrl-block">
-          <label for="gen-scale-slider">Print Footprint: <strong id="gen-scale-val">60 mm</strong></label>
-          <div class="ctrl-row">
-            <input type="range" id="gen-scale-slider" min="40" max="120" step="5" value="60" style="width:110px;" />
-          </div>
-        </div>
-
-        <!-- Strut Diameter (mm) -->
-        <div class="ctrl-block">
-          <label for="gen-strut-slider">Strut Gauge $d_0$: <strong id="gen-strut-val">2.4 mm</strong></label>
-          <div class="ctrl-row">
-            <input type="range" id="gen-strut-slider" min="1.5" max="4.0" step="0.1" value="2.4" style="width:105px;" />
-          </div>
-        </div>
-
-        <!-- Mode-Specific Sub-Control (dynamically shown for Wireframe / K16 / Radial / Dual) -->
-        <div class="ctrl-block" id="mode-subctrl-wrap">
-          <label id="mode-subctrl-label">Architecture Option</label>
-          <div class="ctrl-row" id="mode-subctrl-row">
-            <button class="mini-btn active" id="btn-sub-opt1">Default</button>
-          </div>
-        </div>
+        </details>
       </div>
 
-      <!-- Main Studio Split: 3D/2D Viewport + Readout -->
       <div class="studio-workspace">
         <div class="viewport-col">
-          <div class="viewport-stage">
-            <div id="gen-3d-container">
-              <div class="viewport-overlay-badges">
-                <span class="v-badge" id="badge-left-top">Square #175 · $f = (12, 24, 14)$</span>
-                <span class="v-badge" id="badge-right-top">Footprint: $60\times 60\text{ mm}$ · Height: $60.0\text{ mm}$</span>
-              </div>
-            </div>
-            <div id="gen-net-container">
-              <canvas id="gen-net-canvas" width="560" height="480"></canvas>
-            </div>
+          <div class="icon-row">
+            <button class="icon-btn active" id="btn-gen-autorotate" title="Auto-rotate">↻</button>
+            <button class="icon-btn" id="btn-gen-wireoverlay" title="Mesh wireframe">⊞</button>
+            <button class="icon-btn active" id="btn-gen-axes" title="Origin and centroid markers">✛</button>
+            <button class="icon-btn" id="btn-gen-resetcam" title="Reset camera">⌖</button>
           </div>
-
-          <div class="viewport-toolbar">
-            <span>🖱️ Orbit: Left-drag · Pan: Right-drag · Zoom: Scroll</span>
-            <div class="vt-btns">
-              <button class="vt-btn active" id="btn-gen-autorotate">↻ Auto-Rotate</button>
-              <button class="vt-btn" id="btn-gen-wireoverlay">⊞ Mesh Wireframe</button>
-              <button class="vt-btn active" id="btn-gen-axes">✛ Origin &amp; CoM Markers</button>
-              <button class="vt-btn" id="btn-gen-resetcam">🎯 Reset Camera</button>
-            </div>
+          <div class="viewport-stage">
+            <div id="gen-3d-container"></div>
+            <div id="gen-net-container"><canvas id="gen-net-canvas" width="560" height="480"></canvas></div>
           </div>
         </div>
 
-        <!-- Live Mechanical Readout & Export Column -->
         <div class="readout-col">
           <div class="export-box">
-            <div class="export-title">
-              <span>Direct 3D Printer &amp; Cutter Export</span>
-              <span id="export-format-tag" style="font-family:var(--font-mono); font-size:0.7rem;">Binary STL · Watertight</span>
+            <button class="btn-primary" id="btn-download-main-stl">Download STL</button>
+            <div class="dl-caption" id="dl-stl-filename">magicGem_#175_solid_lam0.20.stl</div>
+            <div class="btn-row" id="dual-stl-btns" style="display:none;">
+              <button class="btn-sec" id="btn-dl-outer-stl">Outer G₀ STL</button>
+              <button class="btn-sec" id="btn-dl-inner-stl">Inner G₁ STL</button>
             </div>
-            <button class="export-btn-primary" id="btn-download-main-stl">
-              📥 Download Printable STL (<span id="dl-stl-filename">magicGem_#175_solid_lam0.20.stl</span>)
-            </button>
-            <div class="export-sub-btns" id="dual-stl-btns" style="display:none;">
-              <button class="export-btn-sec" id="btn-dl-outer-stl">📥 Outer Hull $\mathcal{G}_0$ STL</button>
-              <button class="export-btn-sec" id="btn-dl-inner-stl">📥 Inner Core $\mathcal{G}_1$ STL</button>
-            </div>
-            <div class="export-sub-btns">
-              <button class="export-btn-sec" id="btn-dl-svg-net">✂️ Download Printable SVG Net</button>
-              <button class="export-btn-sec" id="btn-dl-custom-scad">📝 Download Square .scad</button>
+            <div class="btn-row">
+              <button class="btn-sec" id="btn-dl-svg-net">SVG net</button>
+              <button class="btn-sec" id="btn-dl-custom-scad">.scad</button>
             </div>
           </div>
 
-          <!-- 4x4 Matrix + Mechanical Readouts -->
-          <div class="matrix-and-stats">
-            <div class="sq-grid-box">
-              <div class="sq-grid-title" id="matrix-box-title">Square #175 ($4\times 4$)</div>
-              <div class="sq-grid-4x4" id="gen-matrix-grid"></div>
-              <div class="sq-legend">
-                <span><i class="dot-sw" style="background:#0284c7;"></i> Hull Corner $V_0$ (<strong id="cnt-v0">12</strong>)</span>
-                <span><i class="dot-sw" style="background:#7c3aed;"></i> Hull Face $V_{\mathrm{face}}$ (<strong id="cnt-vface">0</strong>)</span>
-                <span><i class="dot-sw" style="background:#d97706;"></i> Interior $V_{\mathrm{int}}$ (<strong id="cnt-vint">4</strong>)</span>
-              </div>
-            </div>
+          <table class="readout">
+            <tr><th>Dudeney group</th><td id="ro-group">III</td></tr>
+            <tr><th>f-vector</th><td id="ro-fvec">(12, 24, 14)</td></tr>
+            <tr><th>Glue tabs</th><td id="ro-tabs">11</td></tr>
+            <tr><th>Volume</th><td id="ro-vols">92</td></tr>
+            <tr><th>Centroid</th><td id="ro-c0">(0, 0, 0) · balanced</td></tr>
+            <tr id="row-balance" style="display:none;"><th>Core balance</th><td id="ro-balance">—</td></tr>
+            <tr><th>Stable faces</th><td id="ro-stab">12/14 · 85.7%</td></tr>
+          </table>
 
-            <div class="mech-stats-list">
-              <div class="stat-row">
-                <span class="s-lbl">Dudeney Group</span>
-                <span class="s-val" id="ro-group">Group III (Associative)</span>
-              </div>
-              <div class="stat-row">
-                <span class="s-lbl">Hull $f$-Vector $(f_0, f_1, f_2)$</span>
-                <span class="s-val" id="ro-fvec">(12, 24, 14) · Euler ✓</span>
-              </div>
-              <div class="stat-row amber">
-                <span class="s-lbl">Papercraft Glue Tabs</span>
-                <span class="s-val" id="ro-tabs">N_tabs = f₀ − 1 = 11 tabs (13 folds)</span>
-              </div>
-              <div class="stat-row">
-                <span class="s-lbl">Volumes $\operatorname{vol}(\mathcal{G}_0), \operatorname{vol}(\mathcal{G}_1)$</span>
-                <span class="s-val" id="ro-vols">G₀: 92 · G₁: 0 (rk 2)</span>
-              </div>
-              <div class="stat-row">
-                <span class="s-lbl">Solid Centroid $\mathbf{c}_0(\lambda)$</span>
-                <span class="s-val" id="ro-c0">(0, 0, 0) [Balanced ✓]</span>
-              </div>
-              <div class="stat-row amber">
-                <span class="s-lbl">Core / Wire Balance</span>
-                <span class="s-val" id="ro-balance">Natural (Δρ₁ = 0)</span>
-              </div>
-              <div class="stat-row cobalt">
-                <span class="s-lbl">Quadrupole $|Q_{xy}|$ &amp; Spin</span>
-                <span class="s-val" id="ro-qxy">|Q_xy| = 0 · I⊥/I_zz = 0.840</span>
-              </div>
-              <div class="stat-row">
-                <span class="s-lbl">Resting Facet Stability</span>
-                <span class="s-val" id="ro-stab">12 / 14 (85.7%) · max 41.8°</span>
-              </div>
+          <div class="matrix-box">
+            <div class="sq-grid-4x4" id="gen-matrix-grid"></div>
+            <div class="sq-legend">
+              <i class="dot-sw" style="background:#0284c7;"></i><span><b id="cnt-v0">12</b> hull corners</span>
+              <i class="dot-sw" style="background:#7c3aed;"></i><span><b id="cnt-vface">0</b> on faces</span>
+              <i class="dot-sw" style="background:#d97706;"></i><span><b id="cnt-vint">4</b> interior</span>
             </div>
-          </div>
-
-          <div class="arch-note-box" id="arch-note-box">
-            <strong>Fabrication Note:</strong> At $\lambda_{\mathrm{cube}} = 0.20$, the vertical span of $\{1\dots 16\}$ matches the $3\times 3$ horizontal grid span, producing an equiaxed polyhedron with $85.7\%$ gravitationally stable facets.
           </div>
         </div>
       </div>
     </div>
   </section>
 
-
-  <!-- ===================================================================== -->
-  <!-- SECTION 2: CURATED REFERENCE STL MODELS (v1-v7 & weighted_ring.stl)   -->
-  <!-- ===================================================================== -->
-  <section class="studio-section" id="sec-reference">
+  <!-- ============ REFERENCE MODELS ============ -->
+  <section id="sec-reference">
     <div class="sec-header">
-      <div class="sec-eyebrow">Section 2 · Original Reference Collection</div>
-      <h2>Curated Reference STL Models (<code>magicGem_v1.stl</code> – <code>v7</code> &amp; <code>weighted_ring.stl</code>)</h2>
-      <p>
-        Explore all 8 original pre-compiled <code>.stl</code> reference models from the <code>magicGemWeb</code> fabrication archive—spanning planar conical-fulcrum balance wheels, outer hull wireframes, complete $K_{16}$ 120-rod strut lattices, and flat-bottom truncated hull variants across vertex counts $V_0 \in \{8, 9, 10, 11\}$.
-      </p>
+      <h2>Reference models</h2>
+      <p>Eight pre-built STL files from the fabrication archive.</p>
     </div>
-
-    <div class="ref-grid" id="ref-models-grid">
-      <!-- Populated and managed by studio.js using shared WebGL renderer + IntersectionObserver -->
-    </div>
-
-    <div class="dl-all-bar">
-      <div>
-        <strong style="font-size:1.02rem; color:var(--ink);">📦 Direct STL Archive Download</strong>
-        <div style="font-size:0.84rem; color:var(--ink-muted);">Download any of the 8 pre-built reference <code>.stl</code> meshes directly for slicing</div>
-      </div>
-      <div class="dl-all-links">
-        <a href="weighted_ring.stl" download="weighted_ring.stl" class="dl-pill">📥 weighted_ring.stl</a>
-        <a href="magicGem_v1.stl" download="magicGem_v1.stl" class="dl-pill">📥 v1 (#51 Wireframe)</a>
-        <a href="magicGem_v2.stl" download="magicGem_v2.stl" class="dl-pill">📥 v2 (#43 K₁₆ Struts)</a>
-        <a href="magicGem_v3.stl" download="magicGem_v3.stl" class="dl-pill">📥 v3 (#6 Solid)</a>
-        <a href="magicGem_v4_end.stl" download="magicGem_v4_end.stl" class="dl-pill">📥 v4 (#12 Solid)</a>
-        <a href="magicGem_v5_end-1.stl" download="magicGem_v5_end-1.stl" class="dl-pill">📥 v5 (#18 Solid)</a>
-        <a href="magicGem_v6_start+1.stl" download="magicGem_v6_start+1.stl" class="dl-pill">📥 v6 (#33 Solid)</a>
-        <a href="magicGem_v7_start+2.stl" download="magicGem_v7_start+2.stl" class="dl-pill">📥 v7 (#25 Solid)</a>
-      </div>
-    </div>
+    <div class="ref-grid" id="ref-models-grid"><!-- populated by studio.js --></div>
   </section>
 
-
-  <!-- ===================================================================== -->
-  <!-- SECTION 3: PARAMETRIC OPENSCAD CODE STUDIO                            -->
-  <!-- ===================================================================== -->
-  <section class="studio-section" id="sec-openscad">
+  <!-- ============ OPENSCAD ============ -->
+  <section id="sec-openscad">
     <div class="sec-header">
-      <div class="sec-eyebrow">Section 3 · Parametric CSG Source Scripts</div>
-      <h2>Parametric OpenSCAD Code Studio (<code>magicGem.scad</code> &amp; <code>weighted_ring.scad</code>)</h2>
-      <p>
-        Inspect, copy, or download standalone OpenSCAD constructive solid geometry (CSG) scripts. Tab 1 dynamically generates a custom <code>.scad</code> script for the active square and parameters selected in Section 1; Tabs 2 and 3 provide the complete reference scripts <code>magicGem.scad</code> and <code>weighted_ring.scad</code>.
-      </p>
+      <h2>OpenSCAD</h2>
+      <p>The first tab follows the square and settings chosen in the studio.</p>
     </div>
-
     <div class="scad-card">
       <div class="scad-tabs-bar">
         <div class="scad-tabs" id="scad-tabs">
-          <button class="scad-tab active" data-scad-tab="custom">
-            Tab 1: Custom Square .scad (Live for #<span id="scad-tab-sqnum">175</span>)
-          </button>
-          <button class="scad-tab" data-scad-tab="magicGem">
-            Tab 2: magicGem.scad (21-Square Hull, Wireframe &amp; Radial Suite)
-          </button>
-          <button class="scad-tab" data-scad-tab="ring">
-            Tab 3: weighted_ring.scad (Conical-Fulcrum Balancing Ring &amp; Stand)
-          </button>
+          <button class="scad-tab active" data-scad-tab="custom">Square #<span id="scad-tab-sqnum">175</span></button>
+          <button class="scad-tab" data-scad-tab="magicGem">magicGem.scad</button>
+          <button class="scad-tab" data-scad-tab="ring">weighted_ring.scad</button>
         </div>
         <div class="scad-actions">
-          <button class="scad-act-btn" id="btn-copy-scad">📋 Copy Code</button>
-          <button class="scad-act-btn" id="btn-download-scad">📥 Download .scad</button>
+          <button class="scad-act-btn" id="btn-copy-scad">Copy</button>
+          <button class="scad-act-btn" id="btn-download-scad">Download</button>
         </div>
       </div>
-
       <div class="scad-code-wrap">
         <pre><code class="language-clike" id="scad-code-display">// Generating OpenSCAD script...</code></pre>
       </div>
@@ -1307,14 +387,14 @@
 
 </main>
 
-<footer class="distill-footer">
-  <div class="footer-inner">
-    <strong>Magic Gems 3D Fabrication, STL &amp; Papercraft Studio</strong> · Companion to Paper C (<em>Balance in Inequality: Testing the Physical Equilibrium, Precession, and Structural Stability of Magic Gems</em>) · Kyle Elliott Mathewson, Faculty of Science, University of Alberta (<a href="mailto:kyle.mathewson@ualberta.ca">kyle.mathewson@ualberta.ca</a>).<br/>
-    Cross-Links: <a href="../index.html">Paper C Interactive Visual Essay</a> · <a href="../paperC.pdf">Paper C Manuscript PDF</a> · <a href="https://kylemath.github.io/MagicGemWebpage/">880-Gem 3D Crystal Explorer</a> · <a href="https://github.com/kylemath/magicGem">GitHub Repository (<code>kylemath/magicGem</code>)</a> · <a href="https://github.com/kylemath/magicGemWeb"><code>kylemath/magicGemWeb</code></a>.
+<footer class="site-footer">
+  <div class="inner">
+    <strong>Magic Gem Fabrication Studio</strong> · Companion to Paper C, <em>Balance in Inequality</em> · Kyle Elliott Mathewson, University of Alberta (<a href="mailto:kyle.mathewson@ualberta.ca">kyle.mathewson@ualberta.ca</a>).<br/>
+    <a href="../index.html">Paper C essay</a> · <a href="../paperC.pdf">PDF</a> · <a href="https://kylemath.github.io/MagicGemWebpage/">880-Gem Explorer</a> · <a href="https://github.com/kylemath/magicGem">GitHub</a>
   </div>
 </footer>
 
-<!-- Load 880-square dataset (local + parent fallback) and Studio Engine -->
+<!-- 880-square dataset (local, with parent-folder fallback) and the studio engine -->
 <script src="squares880.js"></script>
 <script>
   if (!window.ALL880_SQUARES) {

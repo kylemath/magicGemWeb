@@ -1,3 +1,5 @@
+> **Canonical Monorepo:** This web application is also integrated into the main [**kylemath/magicGem**](https://github.com/kylemath/magicGem) repository ([Live Suite](https://kylemath.github.io/magicGem/)).
+
 # Magic Gems Web Application
 
 An interactive web application for exploring Magic Squares and their 3D geometric representations (Magic Gems).
